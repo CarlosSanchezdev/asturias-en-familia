@@ -1,7 +1,348 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!-- Creator: ESRI ArcMap 9.0.0.535 -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN"  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="777.74173" height="413.26299" viewBox="0 0 777.74173 413.26299" enable-background="new 0 0 777.74173 413.26299"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calibrador SVG — Asturias en Familia</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #FDF8F0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Mapa ──────────────────────────────────── */
+    #map-container {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      background: #e8e0d0;
+    }
+
+    #map-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .marker-wrap {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .marker-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2.5px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    }
+
+    .marker-label {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      background: rgba(0,0,0,0.55);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* ── Panel de controles ────────────────────── */
+    #controls {
+      background: white;
+      border-top: 3px solid #2A4D1E;
+      padding: 14px 24px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 32px;
+      flex-shrink: 0;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-row label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2A4D1E;
+      width: 56px;
+      flex-shrink: 0;
+      font-family: monospace;
+    }
+
+    .control-row input[type="range"] {
+      flex: 1;
+      accent-color: #2A4D1E;
+      height: 4px;
+    }
+
+    .control-row input[type="number"] {
+      width: 110px;
+      flex-shrink: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 12px;
+      font-family: monospace;
+      text-align: right;
+    }
+
+    /* ── Tabla de coordenadas ──────────────────── */
+    #coords-bar {
+      background: #f5f0e8;
+      border-top: 1px solid #ddd;
+      padding: 8px 24px;
+      display: flex;
+      gap: 24px;
+      flex-shrink: 0;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .coord-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .coord-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .coord-name {
+      font-weight: 700;
+      color: #333;
+      min-width: 52px;
+    }
+
+    .coord-value {
+      font-family: monospace;
+      color: #555;
+    }
+
+    /* ── Footer con botón ──────────────────────── */
+    #footer {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    #footer p {
+      font-size: 11px;
+      color: #888;
+    }
+
+    #btn-copy {
+      background: #2A4D1E;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #btn-copy:hover { background: #3a6b2a; }
+    #btn-copy:active { background: #1a3010; }
+
+    #copy-feedback {
+      font-size: 12px;
+      color: #2A4D1E;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-left: 12px;
+    }
+
+    /* ── Panel de calibración por clic ─────────── */
+    #click-panel {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255,255,255,0.97);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      width: 236px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      z-index: 50;
+      font-size: 12px;
+    }
+    #click-panel h3 {
+      font-size: 11px;
+      font-weight: 700;
+      color: #2A4D1E;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cp-point {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 6px;
+    }
+    .cp-point.active { border-color: #2A4D1E; background: #f0f7ee; }
+    .cp-point.saved  { border-color: #1565C0; background: #e8f0fe; }
+    .cp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .cp-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+      background: #aaa;
+      border-radius: 10px;
+      padding: 1px 7px;
+    }
+    .cp-badge.active { background: #E91E63; }
+    .cp-badge.saved  { background: #1565C0; }
+    .cp-status { font-size: 10px; color: #999; }
+    .cp-coords {
+      font-family: monospace;
+      font-size: 10px;
+      color: #666;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+    .cp-inputs { display: grid; gap: 4px; }
+    .cp-inputs label {
+      font-size: 10px;
+      color: #888;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 1px;
+    }
+    .cp-inputs input {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 3px 5px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    .cp-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .btn-save {
+      margin-top: 5px;
+      width: 100%;
+      background: #2A4D1E;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-save:hover { background: #3a6b2a; }
+    #btn-calc {
+      width: 100%;
+      background: #1565C0;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+    #btn-calc:disabled { background: #bbb; cursor: default; }
+    #btn-calc:not(:disabled):hover { background: #1976D2; }
+    #btn-reset {
+      width: 100%;
+      margin-top: 5px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #888;
+    }
+    #btn-reset:hover { border-color: #999; color: #555; }
+    #calc-result {
+      margin-top: 6px;
+      font-family: monospace;
+      font-size: 10px;
+      color: #1565C0;
+      background: #e8f0fe;
+      border-radius: 4px;
+      padding: 6px 8px;
+      line-height: 1.6;
+      display: none;
+    }
+    .cmarker {
+      position: absolute;
+      transform: translate(-50%, -50%) rotate(45deg);
+      width: 16px;
+      height: 16px;
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+      pointer-events: none;
+      z-index: 20;
+    }
+    .cmarker-label {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 9px;
+      font-weight: 900;
+      color: white;
+      line-height: 1;
+    }
+
+    .cp-error {
+      font-size: 10px;
+      color: #c0392b;
+      background: #fdecea;
+      border-radius: 4px;
+      padding: 3px 6px;
+      margin-top: 4px;
+      display: none;
+    }
+    .btn-save.success {
+      background: #1565C0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Mapa con marcadores ── -->
+<div id="map-container">
+<svg width="100%" id="map-img" height="100%" viewBox="0 0 777.74173 413.26299" enable-background="new 0 0 777.74173 413.26299"
 	version="1.1" xmlns="http://www.w3.org/2000/svg">
 	<g id="ccaa00c03">
 		<clipPath id="SVG_CP_1">
@@ -2140,3 +2481,368 @@
 			L171.83604,329.78265L168.23612,317.54181L168.23612,316.58175L167.03615,315.8617L167.51614,314.66161L169.1961,313.70155"/>
 	</g>
 </svg>
+
+<!-- Panel de calibracion -->
+<div id="click-panel">
+  <h3>Calibraci&#xF3;n por clic</h3>
+
+  <div class="cp-point" id="cp-0">
+    <div class="cp-header">
+      <span class="cp-badge" id="badge-0">P1</span>
+      <span class="cp-status" id="status-0">Haz clic en el mapa</span>
+    </div>
+    <div class="cp-coords" id="coords-0">&#x2014;</div>
+    <div class="cp-inputs" id="inputs-0" style="display:none">
+      <div>
+        <label>Nombre</label>
+        <input type="text" id="name-0" placeholder="ej. Oviedo" />
+      </div>
+      <div class="cp-row2">
+        <div><label>Lat</label><input type="number" id="lat-0" placeholder="43.3614" step="0.0001" /></div>
+        <div><label>Lng</label><input type="number" id="lng-0" placeholder="-5.8593" step="0.0001" /></div>
+      </div>
+      <button class="btn-save" id="save-0">Guardar P1</button>
+      <div class="cp-error" id="err-0"></div>
+    </div>
+  </div>
+
+  <div class="cp-point" id="cp-1">
+    <div class="cp-header">
+      <span class="cp-badge" id="badge-1">P2</span>
+      <span class="cp-status" id="status-1">Haz clic en el mapa</span>
+    </div>
+    <div class="cp-coords" id="coords-1">&#x2014;</div>
+    <div class="cp-inputs" id="inputs-1" style="display:none">
+      <div>
+        <label>Nombre</label>
+        <input type="text" id="name-1" placeholder="ej. Gij&#xF3;n" />
+      </div>
+      <div class="cp-row2">
+        <div><label>Lat</label><input type="number" id="lat-1" placeholder="43.5454" step="0.0001" /></div>
+        <div><label>Lng</label><input type="number" id="lng-1" placeholder="-5.6618" step="0.0001" /></div>
+      </div>
+      <button class="btn-save" id="save-1">Guardar P2</button>
+      <div class="cp-error" id="err-1"></div>
+    </div>
+  </div>
+
+  <button id="btn-calc" disabled>Calcular constantes</button>
+  <div id="calc-result"></div>
+  <button id="btn-reset">Reiniciar puntos</button>
+</div>
+</div>
+
+<!-- ── Coordenadas calculadas ── -->
+<div id="coords-bar"></div>
+
+<!-- ── Sliders de calibración ── -->
+<div id="controls">
+  <div class="control-row">
+    <label>A_LNG</label>
+    <input type="range" id="sl-A_LNG" min="0.001" max="0.008" step="0.0000001" />
+    <input type="number" id="in-A_LNG" step="0.0000001" />
+  </div>
+  <div class="control-row">
+    <label>B_LNG</label>
+    <input type="range" id="sl-B_LNG" min="-8.5" max="-5.5" step="0.0001" />
+    <input type="number" id="in-B_LNG" step="0.0001" />
+  </div>
+  <div class="control-row">
+    <label>A_LAT</label>
+    <input type="range" id="sl-A_LAT" min="-0.006" max="-0.0005" step="0.0000001" />
+    <input type="number" id="in-A_LAT" step="0.0000001" />
+  </div>
+  <div class="control-row">
+    <label>B_LAT</label>
+    <input type="range" id="sl-B_LAT" min="43.0" max="44.5" step="0.0001" />
+    <input type="number" id="in-B_LAT" step="0.0001" />
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<div id="footer">
+  <p>Calibrador de proyección · Asturias en Familia</p>
+  <div style="display:flex;align-items:center">
+    <span id="copy-feedback">¡Copiado!</span>
+    <button id="btn-copy">Copiar constantes</button>
+  </div>
+</div>
+
+<script>
+  // ── Datos de referencia ─────────────────────────────────
+  const CITIES = [
+    { name: 'Oviedo', lat: 43.3614, lng: -5.8593, color: '#E53935' },
+    { name: 'Gijón',  lat: 43.5454, lng: -5.6618, color: '#1E88E5' },
+    { name: 'Avilés', lat: 43.5547, lng: -5.9249, color: '#43A047' },
+    { name: 'Llanes', lat: 43.4226, lng: -4.7547, color: '#FB8C00' },
+  ];
+
+  const SVG_W = 777.74173;
+  const SVG_H = 413.26299;
+
+  // ── Estado de constantes ────────────────────────────────
+  const C = {
+    A_LNG:  0.00358282,
+    B_LNG: -7.183398,
+    A_LAT: -0.00170741,
+    B_LAT:  43.781844,
+  };
+
+  // ── Fórmula de proyección ───────────────────────────────
+  function latLngToCSS(lat, lng) {
+    const svgX = (lng - C.B_LNG) / C.A_LNG;
+    const svgY = (lat - C.B_LAT) / C.A_LAT;
+    return {
+      left: svgX / SVG_W * 100,
+      top:  svgY / SVG_H * 100,
+    };
+  }
+
+  // ── Crear marcadores en el DOM ──────────────────────────
+  const mapContainer = document.getElementById('map-container');
+
+  CITIES.forEach(city => {
+    const wrap = document.createElement('div');
+    wrap.className = 'marker-wrap';
+    wrap.id = 'marker-' + city.name;
+
+    const dot = document.createElement('div');
+    dot.className = 'marker-dot';
+    dot.style.background = city.color;
+
+    const label = document.createElement('div');
+    label.className = 'marker-label';
+    label.textContent = city.name;
+
+    wrap.appendChild(dot);
+    wrap.appendChild(label);
+    mapContainer.appendChild(wrap);
+  });
+
+  // ── Crear barra de coordenadas ──────────────────────────
+  const coordsBar = document.getElementById('coords-bar');
+
+  CITIES.forEach(city => {
+    const item = document.createElement('div');
+    item.className = 'coord-item';
+
+    const dot = document.createElement('div');
+    dot.className = 'coord-dot';
+    dot.style.background = city.color;
+
+    const name = document.createElement('span');
+    name.className = 'coord-name';
+    name.textContent = city.name;
+
+    const val = document.createElement('span');
+    val.className = 'coord-value';
+    val.id = 'coord-' + city.name;
+
+    item.appendChild(dot);
+    item.appendChild(name);
+    item.appendChild(val);
+    coordsBar.appendChild(item);
+  });
+
+  // ── Actualizar posición de marcadores ──────────────────
+  function updateAll() {
+    CITIES.forEach(city => {
+      const pos = latLngToCSS(city.lat, city.lng);
+      const wrap = document.getElementById('marker-' + city.name);
+      wrap.style.left = pos.left + '%';
+      wrap.style.top  = pos.top  + '%';
+
+      const coord = document.getElementById('coord-' + city.name);
+      coord.textContent = `left ${pos.left.toFixed(2)}%  top ${pos.top.toFixed(2)}%`;
+    });
+  }
+
+  // ── Sincronizar slider ↔ input ──────────────────────────
+  function syncControls(key) {
+    const slider = document.getElementById('sl-' + key);
+    const input  = document.getElementById('in-' + key);
+
+    // Inicializar valores
+    slider.value = C[key];
+    input.value  = C[key];
+
+    slider.addEventListener('input', () => {
+      C[key]      = parseFloat(slider.value);
+      input.value = C[key];
+      updateAll();
+    });
+
+    input.addEventListener('input', () => {
+      const v = parseFloat(input.value);
+      if (!isNaN(v)) {
+        C[key]       = v;
+        slider.value = v;
+        updateAll();
+      }
+    });
+  }
+
+  Object.keys(C).forEach(syncControls);
+
+  // ── Botón copiar ────────────────────────────────────────
+  document.getElementById('btn-copy').addEventListener('click', () => {
+    const ts = [
+      `private readonly A_LNG =  ${C.A_LNG};`,
+      `private readonly B_LNG = ${C.B_LNG};`,
+      `private readonly A_LAT = ${C.A_LAT};`,
+      `private readonly B_LAT =  ${C.B_LAT};`,
+    ].join('\n');
+
+    navigator.clipboard.writeText(ts).then(() => {
+      const fb = document.getElementById('copy-feedback');
+      fb.style.opacity = '1';
+      setTimeout(() => { fb.style.opacity = '0'; }, 2000);
+    });
+  });
+
+
+  // ── Calibración por clic ────────────────────────────────
+  const svgEl = document.getElementById('map-img');
+  const mapCont = document.getElementById('map-container');
+  const calPts = [null, null];
+  let activeSlot = 0;
+
+  function getSVGCoords(e) {
+    const pt = svgEl.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    return pt.matrixTransform(svgEl.getScreenCTM().inverse());
+  }
+
+  function addClickMarker(slot, svgX, svgY) {
+    const old = document.getElementById('cmarker-' + slot);
+    if (old) old.remove();
+    const COLORS = ['#E91E63', '#1565C0'];
+    const wrap = document.createElement('div');
+    wrap.id = 'cmarker-' + slot;
+    wrap.className = 'cmarker';
+    wrap.style.left = (svgX / SVG_W * 100) + '%';
+    wrap.style.top  = (svgY / SVG_H * 100) + '%';
+    wrap.style.background = COLORS[slot];
+    const lbl = document.createElement('div');
+    lbl.className = 'cmarker-label';
+    lbl.textContent = 'P' + (slot + 1);
+    wrap.appendChild(lbl);
+    mapCont.appendChild(wrap);
+  }
+
+  mapCont.addEventListener('click', (e) => {
+    if (e.target.closest('#click-panel')) return;
+
+    const svgPt = getSVGCoords(e);
+    const slot = activeSlot;
+    const leftPct = svgPt.x / SVG_W * 100;
+    const topPct  = svgPt.y / SVG_H * 100;
+
+    calPts[slot] = { svgX: svgPt.x, svgY: svgPt.y, saved: false };
+    addClickMarker(slot, svgPt.x, svgPt.y);
+
+    document.getElementById('coords-' + slot).innerHTML =
+      'svg: (' + svgPt.x.toFixed(1) + ', ' + svgPt.y.toFixed(1) + ')<br>' +
+      leftPct.toFixed(2) + '% / ' + topPct.toFixed(2) + '%';
+    document.getElementById('inputs-' + slot).style.display = 'block';
+    document.getElementById('status-' + slot).textContent = 'Clic registrado';
+    document.getElementById('badge-' + slot).className = 'cp-badge active';
+    document.getElementById('cp-' + slot).className = 'cp-point active';
+
+    activeSlot = slot === 0 ? 1 : 0;
+  });
+
+  [0, 1].forEach(function(slot) {
+    document.getElementById('save-' + slot).addEventListener('click', function() {
+      const errEl = document.getElementById('err-' + slot);
+      errEl.style.display = 'none';
+
+      // Guarda nula: el usuario pulsó sin haber marcado el mapa
+      if (!calPts[slot]) {
+        errEl.textContent = 'Primero haz clic en el mapa para marcar el punto.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const lat = parseFloat(document.getElementById('lat-' + slot).value);
+      const lng = parseFloat(document.getElementById('lng-' + slot).value);
+
+      if (isNaN(lat) || isNaN(lng)) {
+        errEl.textContent = 'Escribe coordenadas reales (lat y lng).';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      calPts[slot].lat   = lat;
+      calPts[slot].lng   = lng;
+      calPts[slot].saved = true;
+
+      document.getElementById('status-' + slot).textContent = '\u2713 Guardado';
+      document.getElementById('badge-' + slot).className = 'cp-badge saved';
+      document.getElementById('cp-' + slot).className = 'cp-point saved';
+      document.getElementById('save-' + slot).classList.add('success');
+
+      const ambos = calPts[0] && calPts[0].saved && calPts[1] && calPts[1].saved;
+      document.getElementById('btn-calc').disabled = !ambos;
+      if (ambos) {
+        document.getElementById('btn-calc').textContent = '\u2192 Calcular constantes';
+      }
+    });
+  });
+
+  document.getElementById('btn-calc').addEventListener('click', function() {
+    const p1 = calPts[0], p2 = calPts[1];
+    if (!p1 || !p1.saved || !p2 || !p2.saved) return;
+
+    // Fórmula inversa: dos puntos (svgX,svgY) + (lng,lat) reales → constantes
+    // svgX = (lng - B_LNG) / A_LNG  →  A_LNG = (lng1-lng2)/(svgX1-svgX2)
+    const newA_LNG = (p1.lng - p2.lng) / (p1.svgX - p2.svgX);
+    const newB_LNG = p1.lng - newA_LNG * p1.svgX;
+    const newA_LAT = (p1.lat - p2.lat) / (p1.svgY - p2.svgY);
+    const newB_LAT = p1.lat - newA_LAT * p1.svgY;
+
+    C.A_LNG = newA_LNG; C.B_LNG = newB_LNG;
+    C.A_LAT = newA_LAT; C.B_LAT = newB_LAT;
+
+    ['A_LNG', 'B_LNG', 'A_LAT', 'B_LAT'].forEach(function(k) {
+      document.getElementById('sl-' + k).value = C[k];
+      document.getElementById('in-' + k).value = C[k];
+    });
+    updateAll();
+
+    const res = document.getElementById('calc-result');
+    res.style.display = 'block';
+    res.innerHTML =
+      'A_LNG = ' + newA_LNG.toFixed(8) + '<br>' +
+      'B_LNG = ' + newB_LNG.toFixed(6) + '<br>' +
+      'A_LAT = ' + newA_LAT.toFixed(8) + '<br>' +
+      'B_LAT = ' + newB_LAT.toFixed(6);
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', function() {
+    calPts[0] = calPts[1] = null;
+    activeSlot = 0;
+    [0, 1].forEach(function(slot) {
+      const cm = document.getElementById('cmarker-' + slot);
+      if (cm) cm.remove();
+      document.getElementById('coords-' + slot).textContent = '—';
+      document.getElementById('inputs-' + slot).style.display = 'none';
+      document.getElementById('status-' + slot).textContent = 'Haz clic en el mapa';
+      document.getElementById('badge-' + slot).className = 'cp-badge';
+      document.getElementById('cp-' + slot).className = 'cp-point';
+      ['lat', 'lng', 'name'].forEach(function(f) {
+        document.getElementById(f + '-' + slot).value = '';
+      });
+      document.getElementById('save-' + slot).classList.remove('success');
+      document.getElementById('err-' + slot).style.display = 'none';
+    });
+    document.getElementById('btn-calc').disabled = true;
+    document.getElementById('calc-result').style.display = 'none';
+  });
+
+  // ── Render inicial ──────────────────────────────────────
+  updateAll();
+</script>
+</body>
+</html>
