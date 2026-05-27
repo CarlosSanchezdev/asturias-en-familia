@@ -74,3 +74,20 @@ db.categories.insertMany([
 ]);
 
 print('✅ Categorías iniciales insertadas');
+
+// ─── Usuario admin ──────────────────────────────────────────
+const adminExists = db.users.findOne({ email: 'admin@asturias-familia.es' });
+
+if (!adminExists) {
+  db.users.insertOne({
+    email: 'admin@asturias-familia.es',
+    passwordHash: '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBpj2ky.U9hqH2',
+    role: 'admin',
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  print('✅ Usuario admin creado: admin@asturias-familia.es / Admin1234');
+} else {
+  print('ℹ️  Usuario admin ya existe, omitiendo');
+}

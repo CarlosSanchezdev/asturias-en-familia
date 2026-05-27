@@ -107,6 +107,25 @@ curl http://localhost:3000/api/activities
 
 ---
 
+## Usuario administrador por defecto
+
+Al arrancar por primera vez se crea automáticamente un usuario admin:
+
+| Campo | Valor |
+|---|---|
+| Email | admin@asturias-familia.es |
+| Contraseña | Admin1234 |
+| Rol | admin |
+
+> ⚠️ Cambia la contraseña en producción modificando el hash en backend/scripts/mongo-init.js
+
+Para cambiar el rol de un usuario existente desde MongoDB:
+```bash
+docker exec -it aef-mongodb mongosh asturias-familia --eval "db.users.updateOne({ email: 'tu@email.com' }, { \$set: { role: 'admin' } })"
+```
+
+---
+
 ## Estructura del proyecto
 
 ```
