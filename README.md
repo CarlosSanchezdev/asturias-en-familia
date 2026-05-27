@@ -77,6 +77,53 @@ docker-compose exec backend npm test
 docker-compose exec backend sh
 ```
 
+## Seed de datos de desarrollo
+
+### Categorías
+
+Las 6 categorías se insertan automáticamente al arrancar Docker por primera vez mediante el script
+`backend/scripts/mongo-init.js`.
+
+### Actividades de ejemplo
+
+Para insertar las 10 actividades de ejemplo ejecuta (con Docker levantado):
+
+```bash
+docker exec -it aef-backend node scripts/seed-activities.js
+```
+
+> ⚠️ Ejecutar solo una vez. Si se ejecuta dos veces se duplican los registros. Para limpiar: `docker-compose down -v` y
+> volver a levantar.
+
+### Verificar que los datos están cargados
+
+```bash
+# Categorías (debe devolver 6)
+curl http://localhost:3000/api/categories
+
+# Actividades (debe devolver 10 tras el seed)
+curl http://localhost:3000/api/activities
+```
+
+---
+
+## Usuario administrador por defecto
+
+Al arrancar por primera vez se crea automáticamente un usuario admin:
+
+| Campo | Valor |
+|---|---|
+| Email | admin@asturias-familia.es |
+| Contraseña | Admin1234 |
+| Rol | admin |
+
+> ⚠️ Cambia la contraseña en producción modificando el hash en backend/scripts/mongo-init.js
+
+Para cambiar el rol de un usuario existente desde MongoDB:
+```bash
+docker exec -it aef-mongodb mongosh asturias-familia --eval "db.users.updateOne({ email: 'tu@email.com' }, { \$set: { role: 'admin' } })"
+```
+
 ---
 
 ## Estructura del proyecto
