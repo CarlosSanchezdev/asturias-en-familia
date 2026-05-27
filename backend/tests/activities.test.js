@@ -1,8 +1,18 @@
 import request from 'supertest';
+import mongoose from 'mongoose';
 import app from '../src/server.js';
 
-// Con ES Modules el mock de mongoose se hace diferente
-// Para el MVP simplificamos los tests para que pasen la CI
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/asturias-test';
+
+// Conectar antes de todos los tests
+beforeAll(async () => {
+  await mongoose.connect(MONGODB_URI);
+}, 15000);
+
+// Desconectar después de todos los tests
+afterAll(async () => {
+  await mongoose.disconnect();
+});
 
 describe('GET /health', () => {
   it('responde 200 con status ok', async () => {
@@ -17,7 +27,7 @@ describe('GET /api/categories', () => {
     const res = await request(app).get('/api/categories');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-  });
+  }, 10000);
 });
 
 describe('GET /api/activities', () => {
@@ -26,7 +36,7 @@ describe('GET /api/activities', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('data');
     expect(res.body).toHaveProperty('pagination');
-  });
+  }, 10000);
 
   it('devuelve 400 con zona inválida', async () => {
     const res = await request(app).get('/api/activities?zone=norte');
