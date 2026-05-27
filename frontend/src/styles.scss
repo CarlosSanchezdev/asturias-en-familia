@@ -1,0 +1,23 @@
+/* Estilos globales — Asturias en Familia */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --color-bg: #FDF8F0;
+  --color-primary: #2A4D1E;
+  --color-primary-light: #3D7A36;
+  --color-surface: #FFFFFF;
+  --color-border: #E8E0D0;
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B6B;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+}

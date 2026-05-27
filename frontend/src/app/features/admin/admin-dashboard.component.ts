@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'aef-admin-dashboard',
+  standalone: true,
+  template: `
+    <div style="padding:2rem;font-family:sans-serif">
+      <h1 style="color:#2A4D1E">Panel de administración</h1>
+      <p style="color:#6B6B6B;margin-top:0.5rem">En construcción — Sprint 7</p>
+    </div>
+  `,
+})
+export class AdminDashboardComponent {}
