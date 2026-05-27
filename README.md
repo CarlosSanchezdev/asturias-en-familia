@@ -42,7 +42,7 @@ instantáneas.
 | ------------------ | ---------------------------- | --------------------------------------- |
 | Frontend (Angular) | http://localhost:4200        | Mapa de Asturias visible                |
 | Backend (API)      | http://localhost:3000/health | `{ "status": "ok", "db": "connected" }` |
-| MongoDB            | localhost:27017              | Conectado desde el backend              |
+| MongoDB            | localhost:27018              | Conectado desde el backend              |
 
 ---
 
@@ -76,6 +76,20 @@ docker-compose exec backend npm test
 # Abrir una shell en el contenedor del backend
 docker-compose exec backend sh
 ```
+
+---
+
+## Conectar MongoDB Compass al proyecto
+
+La instancia de Docker usa el puerto 27018 para evitar conflictos con MongoDB local.
+Usa esta URI en Compass:
+
+```
+mongodb://localhost:27018
+```
+
+> ℹ️ Si tienes MongoDB instalado localmente en Windows ocupa el puerto 27017.
+> El proyecto usa el 27018 para que ambos puedan coexistir.
 
 ---
 
@@ -133,6 +147,19 @@ Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 | Testing       | Jest, Jasmine/Karma, Playwright       |
 | CI/CD         | GitHub Actions                        |
 | Contenedores  | Docker + Docker Compose               |
+
+---
+
+## Posibles ampliaciones futuras
+
+- Separación del detalle de actividad en colección independiente `ActivityDetail`
+  para optimizar la carga del mapa (solo datos mínimos) y permitir contenido
+  enriquecido (galería de fotos, horarios, tarifas detalladas) sin afectar
+  al rendimiento del listado principal.
+- Navegación jerárquica del mapa a 3 niveles (Asturias → Zona → Concejo)
+  requiere añadir IDs por municipio al SVG actual. El SVG disponible (ArcGIS)
+  no tiene paths identificados por concejo. Implementación futura cuando se
+  disponga de un SVG con esa estructura.
 
 ---
 

@@ -51,6 +51,28 @@ const activitySchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    website: {
+      type: String,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    schedule: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    tips: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
     accessible: {
       type: Boolean,
       default: false,
