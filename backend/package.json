@@ -1,7 +1,7 @@
 {
 	"name": "asturias-en-familia-backend",
 	"version": "1.0.0",
-	"description": "API REST para Asturias en Familia — IES Nº1 Gijón DAW 2024-25",
+	"description": "API REST para Asturias en Familia — Cifp Aviles DAW 2025-26",
 	"type": "module",
 	"main": "src/server.js",
 	"scripts": {
@@ -19,7 +19,8 @@
 		"express-validator": "^7.2.0",
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.4.0",
-		"morgan": "^1.10.0"
+		"morgan": "^1.10.0",
+		"multer": "^1.4.5-lts.1"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.9.0",
@@ -39,4 +40,3 @@
 		"node": ">=20.0.0"
 	}
 }
-

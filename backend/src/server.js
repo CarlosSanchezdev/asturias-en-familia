@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import activitiesRouter from './routes/activities.js';
 import categoriesRouter from './routes/categories.js';
 import authRouter from './routes/auth.js';
+import uploadsRouter from './routes/uploads.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -20,6 +21,9 @@ app.use(cors({
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10kb' }));
 
+// ─── Estáticos ────────────────────────────────────────────
+app.use('/uploads', express.static('uploads'));
+
 // ─── Rutas ────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({
@@ -32,6 +36,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/activities', activitiesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/uploads', uploadsRouter);
 
 // Ruta no encontrada
 app.use((_req, res) => {
