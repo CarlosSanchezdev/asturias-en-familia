@@ -38,9 +38,10 @@ describe('GET /api/activities', () => {
     expect(res.body).toHaveProperty('pagination');
   }, 10000);
 
-  it('devuelve 400 con zona inválida', async () => {
+  it('ignora parámetros de zona desconocidos y devuelve 200', async () => {
     const res = await request(app).get('/api/activities?zone=norte');
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('data');
   });
 });
 
