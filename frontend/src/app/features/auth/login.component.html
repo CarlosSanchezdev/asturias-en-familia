@@ -1,6 +1,39 @@
-<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#FDF8F0">
-  <div style="background:#fff;padding:2rem;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);min-width:320px">
-    <h1 style="color:#2A4D1E;margin-bottom:1.5rem">Acceso admin</h1>
-    <p style="color:#6B6B6B;font-size:0.9rem">Formulario de login — Sprint 7</p>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-logo__icon">🗺️</span>
+      <h1 class="login-logo__title">Asturias en Familia</h1>
+      <p class="login-logo__subtitle">Panel de administración</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+      <div class="field">
+        <label for="email" class="field__label">Correo electrónico</label>
+        <input id="email" type="email" formControlName="email" class="field__input"
+          [class.field__input--error]="emailCtrl.invalid && emailCtrl.touched" placeholder="admin@ejemplo.com"
+          autocomplete="email" />
+        @if (emailCtrl.invalid && emailCtrl.touched) {
+        <span class="field__error">Introduce un correo válido</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password" class="field__label">Contraseña</label>
+        <input id="password" type="password" formControlName="password" class="field__input"
+          [class.field__input--error]="passwordCtrl.invalid && passwordCtrl.touched" placeholder="••••••••"
+          autocomplete="current-password" />
+        @if (passwordCtrl.invalid && passwordCtrl.touched) {
+        <span class="field__error">La contraseña es obligatoria</span>
+        }
+      </div>
+
+      @if (error()) {
+      <div class="login-error" role="alert">{{ error() }}</div>
+      }
+
+      <button type="submit" class="login-btn" [disabled]="loading()">
+        {{ loading() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
   </div>
 </div>

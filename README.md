@@ -188,7 +188,7 @@ Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 | Frontend      | Angular 17, TypeScript, SCSS, Signals |
 | Backend       | Node.js 20, Express 5, Mongoose       |
 | Base de datos | MongoDB 7 (índice 2dsphere)           |
-| Mapa          | SVG de Asturias + CSS posicionamiento |
+| Mapa          | Leaflet 1.9 + SVG imageOverlay        | Zoom nativo, coordenadas geográficas reales |
 | Testing       | Jest, Jasmine/Karma, Playwright       |
 | CI/CD         | GitHub Actions                        |
 | Contenedores  | Docker + Docker Compose               |

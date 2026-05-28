@@ -1,0 +1,58 @@
+<div class="pending-page">
+  <header class="pending-header">
+    <a routerLink="/admin" class="back-link">← Volver al panel</a>
+    <h1 class="pending-header__title">Solicitudes pendientes</h1>
+  </header>
+
+  @if (loading()) {
+    <div class="state-msg">Cargando solicitudes…</div>
+  } @else if (error()) {
+    <div class="state-msg state-msg--error">{{ error() }}</div>
+  } @else if (submissions().length === 0) {
+    <div class="empty-state">
+      <span class="empty-state__icon">✅</span>
+      <p class="empty-state__text">No hay solicitudes pendientes</p>
+    </div>
+  } @else {
+    @if (actionError()) {
+      <div class="action-error" role="alert">{{ actionError() }}</div>
+    }
+
+    <div class="table-wrapper">
+      <p class="count-label">{{ submissions().length }} solicitud{{ submissions().length !== 1 ? 'es' : '' }} pendiente{{ submissions().length !== 1 ? 's' : '' }}</p>
+      <table class="submissions-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Zona</th>
+            <th>Municipio</th>
+            <th>Contacto</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sub of submissions(); track sub._id) {
+            <tr>
+              <td class="cell-name">{{ sub.name }}</td>
+              <td>
+                <span class="badge badge--zone">{{ formatZone(sub.zone) }}</span>
+              </td>
+              <td>{{ sub.municipality || '—' }}</td>
+              <td class="cell-contact">{{ sub.contact }}</td>
+              <td class="cell-date">{{ formatDate(sub.createdAt) }}</td>
+              <td class="cell-actions">
+                <button class="action-btn action-btn--approve" title="Aprobar" (click)="approve(sub._id)">
+                  ✅ Aprobar
+                </button>
+                <button class="action-btn action-btn--reject" title="Rechazar" (click)="reject(sub._id)">
+                  ❌ Rechazar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
