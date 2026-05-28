@@ -2,6 +2,22 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const A_LNG = 0.004863492265927784;
+const B_LNG = -7.720763681427141;
+const A_LAT = -0.002585444509287294;
+const B_LAT = 43.82839845916549;
+const SVG_W = 777.74173;
+const SVG_H = 413.26299;
+
+function calcSVGPosition(lng, lat) {
+  const svgX = (lng - B_LNG) / A_LNG;
+  const svgY = (lat - B_LAT) / A_LAT;
+  return {
+    mapLeft: parseFloat((svgX / SVG_W * 100).toFixed(4)),
+    mapTop: parseFloat((svgY / SVG_H * 100).toFixed(4)),
+  };
+}
+
 await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/asturias-familia');
 
 const db = mongoose.connection.db;
@@ -24,6 +40,7 @@ await db.collection('activities').insertMany([
         price: 12.50,
         languages: ['es', 'en'],
         active: true,
+        ...calcSVGPosition(-5.6618, 43.5454),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -40,6 +57,7 @@ await db.collection('activities').insertMany([
         price: 0,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-5.3847, 43.5289),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -56,6 +74,7 @@ await db.collection('activities').insertMany([
         price: 0,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-6.0789, 43.2547),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -72,6 +91,7 @@ await db.collection('activities').insertMany([
         price: 7,
         languages: ['es', 'en'],
         active: true,
+        ...calcSVGPosition(-4.5234, 43.4789),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -88,6 +108,7 @@ await db.collection('activities').insertMany([
         price: 0,
         languages: ['es', 'en'],
         active: true,
+        ...calcSVGPosition(-4.9902, 43.2657),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -103,6 +124,7 @@ await db.collection('activities').insertMany([
         price: 25,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-6.3421, 43.3678),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -119,6 +141,7 @@ await db.collection('activities').insertMany([
         price: 9,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-6.0234, 43.1456),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -134,6 +157,7 @@ await db.collection('activities').insertMany([
         price: 0,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-4.7823, 43.4912),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -149,6 +173,7 @@ await db.collection('activities').insertMany([
         price: 0,
         languages: ['es'],
         active: true,
+        ...calcSVGPosition(-5.2134, 43.4234),
         createdAt: new Date(),
         updatedAt: new Date(),
     },
@@ -165,6 +190,7 @@ await db.collection('activities').insertMany([
         price: 3.5,
         languages: ['es', 'en'],
         active: true,
+        ...calcSVGPosition(-5.6234, 43.5123),
         createdAt: new Date(),
         updatedAt: new Date(),
     },

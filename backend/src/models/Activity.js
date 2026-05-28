@@ -51,6 +51,28 @@ const activitySchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    website: {
+      type: String,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    schedule: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    tips: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
     accessible: {
       type: Boolean,
       default: false,
@@ -101,10 +123,10 @@ activitySchema.virtual('isFree').get(function () {
 
 // ─── Pre-save: calcular posición SVG desde coordenadas ─────
 // Constantes de calibración (ver posicionador-ciudades.html)
-const A_LNG = 0.00358282;
-const B_LNG = -7.183398;
-const A_LAT = -0.00170741;
-const B_LAT = 43.781844;
+const A_LNG = 0.004863492265927784;
+const B_LNG = -7.720763681427141;
+const A_LAT = -0.002585444509287294;
+const B_LAT = 43.82839845916549;
 const SVG_W = 777.74173;
 const SVG_H = 413.26299;
 

@@ -71,6 +71,17 @@ db.categories.insertMany([
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    name: 'Faros',
+    slug: 'faros',
+    icon: 'icon-faros.png',
+    color: '#E63946',
+    description: 'Faros y puntos de interés marítimo en la costa asturiana',
+    order: 7,
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ]);
 
 print('✅ Categorías iniciales insertadas');
