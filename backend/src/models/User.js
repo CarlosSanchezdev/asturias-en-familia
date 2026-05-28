@@ -43,8 +43,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.index({ email: 1 });
-
 // ─── Métodos de instancia ──────────────────────────────────
 
 /** Comprueba si la contraseña en texto plano coincide con el hash */

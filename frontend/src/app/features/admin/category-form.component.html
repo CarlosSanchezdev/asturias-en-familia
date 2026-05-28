@@ -1,0 +1,135 @@
+<div class="form-page">
+  <header class="form-header">
+    <a routerLink="/admin/categorias" class="back-link">← Categorías</a>
+    <h1 class="form-header__title">
+      {{ isEditMode ? 'Editar categoría' : 'Nueva categoría' }}
+    </h1>
+  </header>
+
+  @if (loading()) {
+    <div class="state-msg">Cargando categoría…</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-body" novalidate>
+
+      <!-- Información -->
+      <section class="form-section">
+        <h2 class="form-section__title">Información</h2>
+
+        <div class="field">
+          <label class="field__label">Nombre <span class="required">*</span></label>
+          <input
+            formControlName="name"
+            type="text"
+            class="field__input"
+            [class.field__input--error]="nameCtrl.invalid && nameCtrl.touched"
+            placeholder="Ej: Rutas de senderismo"
+            maxlength="50"
+            (input)="onNameInput($any($event.target).value)"
+          />
+          @if (nameCtrl.invalid && nameCtrl.touched) {
+            <span class="field__error">El nombre es obligatorio (máx. 50 caracteres)</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label">Slug <span class="required">*</span></label>
+          <input
+            formControlName="slug"
+            type="text"
+            class="field__input"
+            [class.field__input--error]="slugCtrl.invalid && slugCtrl.touched"
+            placeholder="Ej: rutas-senderismo"
+            (focus)="onSlugFocus()"
+          />
+          <span class="field__hint">Solo letras minúsculas, números y guiones</span>
+          @if (slugCtrl.invalid && slugCtrl.touched) {
+            <span class="field__error">Slug inválido: solo letras minúsculas, números y guiones</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label">Descripción</label>
+          <textarea
+            formControlName="description"
+            class="field__textarea"
+            rows="3"
+            placeholder="Descripción breve de la categoría"
+            maxlength="200"
+          ></textarea>
+          @if (descriptionCtrl.invalid && descriptionCtrl.touched) {
+            <span class="field__error">Máximo 200 caracteres</span>
+          }
+        </div>
+      </section>
+
+      <!-- Apariencia -->
+      <section class="form-section">
+        <h2 class="form-section__title">Apariencia</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Color</label>
+            <div class="color-field">
+              <input formControlName="color" type="color" class="color-picker" />
+              <input
+                formControlName="color"
+                type="text"
+                class="field__input color-text"
+                placeholder="#2a4d1e"
+                maxlength="7"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label">Orden</label>
+            <input
+              formControlName="order"
+              type="number"
+              min="0"
+              class="field__input"
+              [class.field__input--error]="orderCtrl.invalid && orderCtrl.touched"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Icono <span class="required">*</span></label>
+          <div class="icon-upload">
+            @if (iconPreview()) {
+              <div class="icon-preview">
+                <img [src]="iconPreview()" alt="Vista previa del icono" class="icon-preview__img" />
+              </div>
+            }
+            <label class="file-btn" [class.file-btn--uploading]="uploading()">
+              <input
+                type="file"
+                accept="image/png,image/svg+xml"
+                (change)="onFileChange($event)"
+                class="sr-only"
+              />
+              {{ uploading() ? 'Subiendo…' : (iconPreview() ? 'Cambiar icono' : 'Seleccionar PNG/SVG') }}
+            </label>
+            @if (iconCtrl.invalid && iconCtrl.touched && !iconPreview()) {
+              <span class="field__error">El icono es obligatorio</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Error global -->
+      @if (error()) {
+        <div class="form-error" role="alert">{{ error() }}</div>
+      }
+
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a routerLink="/admin/categorias" class="btn btn--outline">Cancelar</a>
+        <button type="submit" class="btn btn--primary" [disabled]="saving() || uploading()">
+          {{ saving() ? 'Guardando…' : (isEditMode ? 'Guardar cambios' : 'Crear categoría') }}
+        </button>
+      </div>
+
+    </form>
+  }
+</div>

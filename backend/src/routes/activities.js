@@ -17,17 +17,16 @@ const activityValidators = [
     .isArray({ min: 2, max: 2 }).withMessage('Coordenadas: [lng, lat]')
     .custom(([lng, lat]) => lng >= -9 && lng <= 0 && lat >= 43 && lat <= 44)
     .withMessage('Coordenadas fuera del rango de Asturias'),
-  body('zone').isIn(['oriente', 'centro', 'occidente'])
+  body('zone').optional().isIn(['oriente', 'centro', 'occidente'])
     .withMessage('Zona inválida'),
-  body('price').optional().isFloat({ min: 0 }).withMessage('El precio no puede ser negativo'),
+  body('priceText').optional().trim().isLength({ max: 200 }),
+  body('free').optional().isBoolean(),
   body('accessible').optional().isBoolean(),
 ];
 
 // ─── GET /api/activities ──────────────────────────────────
 router.get('/', [
-  query('zone').optional().isIn(['oriente', 'centro', 'occidente']),
   query('category').optional().isMongoId(),
-  query('accessible').optional().isBoolean(),
   query('free').optional().isBoolean(),
   query('search').optional().trim().isLength({ max: 100 }),
   query('page').optional().isInt({ min: 1 }).default(1),
@@ -35,13 +34,11 @@ router.get('/', [
   handleValidationErrors,
 ], async (req, res, next) => {
   try {
-    const { zone, category, accessible, free, search, page, limit } = req.query;
+    const { category, free, search, page, limit } = req.query;
     const filter = { active: true };
 
-    if (zone)       filter.zone = zone;
-    if (category)   filter.category = category;
-    if (accessible) filter.accessible = accessible === 'true';
-    if (free === 'true') filter.price = 0;
+    if (category)        filter.category = category;
+    if (free === 'true') filter.free = true;
 
     // Búsqueda fulltext
     if (search) filter.$text = { $search: search };

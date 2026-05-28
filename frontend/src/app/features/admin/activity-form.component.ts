@@ -20,11 +20,6 @@ function latLngToMap(lat: number, lng: number) {
 }
 
 const LANGUAGES = ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Portugués'];
-const ZONES = [
-  { value: 'oriente', label: 'Oriente' },
-  { value: 'centro', label: 'Centro' },
-  { value: 'occidente', label: 'Occidente' },
-] as const;
 
 @Component({
   selector: 'aef-activity-form',
@@ -39,7 +34,6 @@ export class ActivityFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  readonly zones = ZONES;
   readonly availableLanguages = LANGUAGES;
 
   categories = signal<Category[]>([]);
@@ -55,10 +49,10 @@ export class ActivityFormComponent implements OnInit {
     shortDescription: [''],
     description: [''],
     category: ['', Validators.required],
-    zone: ['', Validators.required],
     municipality: [''],
-    price: [0, [Validators.required, Validators.min(0)]],
-    accessible: [false],
+    zone: ['', Validators.required],
+    priceText: [''],
+    free: [false],
     languages: [[] as string[]],
     lat: [null as number | null, Validators.required],
     lng: [null as number | null, Validators.required],
@@ -86,10 +80,10 @@ export class ActivityFormComponent implements OnInit {
             shortDescription: (activity as any).shortDescription ?? '',
             description: activity.description,
             category: typeof activity.category === 'object' ? activity.category._id : activity.category,
-            zone: activity.zone,
             municipality: activity.municipality ?? '',
-            price: activity.price,
-            accessible: activity.accessible,
+            zone: activity.zone ?? '',
+            priceText: activity.priceText ?? '',
+            free: activity.free ?? false,
             languages: activity.languages ?? [],
             lat,
             lng,
@@ -137,10 +131,10 @@ export class ActivityFormComponent implements OnInit {
       shortDescription: v.shortDescription ?? undefined,
       description: v.description ?? undefined,
       category: v.category!,
-      zone: v.zone as 'oriente' | 'centro' | 'occidente',
       municipality: v.municipality ?? undefined,
-      price: v.price ?? 0,
-      accessible: v.accessible ?? false,
+      zone: v.zone as 'oriente' | 'centro' | 'occidente',
+      priceText: v.priceText || undefined,
+      free: v.free ?? false,
       languages: v.languages ?? [],
       location: { type: 'Point', coordinates: [lng, lat] },
       mapLeft,
@@ -170,8 +164,6 @@ export class ActivityFormComponent implements OnInit {
 
   get nameCtrl() { return this.form.get('name')!; }
   get categoryCtrl() { return this.form.get('category')!; }
-  get zoneCtrl() { return this.form.get('zone')!; }
-  get priceCtrl() { return this.form.get('price')!; }
   get latCtrl() { return this.form.get('lat')!; }
   get lngCtrl() { return this.form.get('lng')!; }
 }

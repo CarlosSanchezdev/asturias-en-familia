@@ -46,7 +46,6 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-categorySchema.index({ slug: 1 });
 categorySchema.index({ active: 1, order: 1 });
 
 export default mongoose.model('Category', categorySchema);

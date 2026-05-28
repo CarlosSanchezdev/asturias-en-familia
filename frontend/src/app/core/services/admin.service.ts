@@ -10,8 +10,9 @@ export interface ActivityPayload {
   category: string;
   zone: 'oriente' | 'centro' | 'occidente';
   municipality?: string;
-  price: number;
-  accessible: boolean;
+  priceText?: string;
+  free?: boolean;
+  accessible?: boolean;
   languages: string[];
   location: { type: 'Point'; coordinates: [number, number] };
   mapLeft: number;
@@ -24,15 +25,6 @@ export interface ActivityPayload {
   tips?: string;
 }
 
-export interface Submission {
-  _id: string;
-  name: string;
-  zone: string;
-  municipality: string;
-  contact: string;
-  createdAt: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -63,17 +55,5 @@ export class AdminService {
 
   deleteActivity(id: string) {
     return this.http.delete(`${this.base}/activities/${id}`);
-  }
-
-  getSubmissions(status = 'pending') {
-    return this.http.get<Submission[]>(`${this.base}/submissions?status=${status}`);
-  }
-
-  approveSubmission(id: string) {
-    return this.http.post(`${this.base}/submissions/${id}/approve`, {});
-  }
-
-  rejectSubmission(id: string, note?: string) {
-    return this.http.post(`${this.base}/submissions/${id}/reject`, { note });
   }
 }

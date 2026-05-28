@@ -38,34 +38,18 @@
             placeholder="Descripción detallada de la actividad"></textarea>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label class="field__label">Categoría <span class="required">*</span></label>
-            <select formControlName="category" class="field__select"
-              [class.field__select--error]="categoryCtrl.invalid && categoryCtrl.touched">
-              <option value="">Selecciona categoría</option>
-              @for (cat of categories(); track cat._id) {
-                <option [value]="cat._id">{{ cat.name }}</option>
-              }
-            </select>
-            @if (categoryCtrl.invalid && categoryCtrl.touched) {
-              <span class="field__error">Selecciona una categoría</span>
+        <div class="field">
+          <label class="field__label">Categoría <span class="required">*</span></label>
+          <select formControlName="category" class="field__select"
+            [class.field__select--error]="categoryCtrl.invalid && categoryCtrl.touched">
+            <option value="">Selecciona categoría</option>
+            @for (cat of categories(); track cat._id) {
+              <option [value]="cat._id">{{ cat.name }}</option>
             }
-          </div>
-
-          <div class="field">
-            <label class="field__label">Zona <span class="required">*</span></label>
-            <select formControlName="zone" class="field__select"
-              [class.field__select--error]="zoneCtrl.invalid && zoneCtrl.touched">
-              <option value="">Selecciona zona</option>
-              @for (z of zones; track z.value) {
-                <option [value]="z.value">{{ z.label }}</option>
-              }
-            </select>
-            @if (zoneCtrl.invalid && zoneCtrl.touched) {
-              <span class="field__error">Selecciona una zona</span>
-            }
-          </div>
+          </select>
+          @if (categoryCtrl.invalid && categoryCtrl.touched) {
+            <span class="field__error">Selecciona una categoría</span>
+          }
         </div>
 
         <div class="field">
@@ -73,29 +57,33 @@
           <input formControlName="municipality" type="text" class="field__input"
             placeholder="Ej: Gijón, Oviedo, Llanes…" />
         </div>
+
+        <div class="field">
+          <label class="field__label">Zona <span class="required">*</span></label>
+          <select formControlName="zone" class="field__select">
+            <option value="">Selecciona una zona</option>
+            <option value="oriente">Oriente</option>
+            <option value="centro">Centro</option>
+            <option value="occidente">Occidente</option>
+          </select>
+        </div>
       </section>
 
       <!-- Detalles -->
       <section class="form-section">
         <h2 class="form-section__title">Detalles</h2>
 
-        <div class="field-row">
-          <div class="field">
-            <label class="field__label">Precio (€) <span class="required">*</span></label>
-            <input formControlName="price" type="number" min="0" step="0.5" class="field__input"
-              [class.field__input--error]="priceCtrl.invalid && priceCtrl.touched"
-              placeholder="0 = gratuito" />
-            @if (priceCtrl.invalid && priceCtrl.touched) {
-              <span class="field__error">Introduce un precio válido (0 o mayor)</span>
-            }
-          </div>
+        <div class="field">
+          <label class="field__label">Precio</label>
+          <input formControlName="priceText" type="text" class="field__input"
+            placeholder="Ej: Gratuito, Adultos 12€ / Niños 6€, Desde 5€…" />
+        </div>
 
-          <div class="field field--checkbox">
-            <label class="checkbox-label">
-              <input formControlName="accessible" type="checkbox" class="checkbox-label__input" />
-              <span class="checkbox-label__text">Accesible para personas con movilidad reducida</span>
-            </label>
-          </div>
+        <div class="field">
+          <label class="field__label checkbox-label">
+            <input formControlName="free" type="checkbox" />
+            Actividad gratuita (permite filtrar en el mapa)
+          </label>
         </div>
 
         <div class="field">

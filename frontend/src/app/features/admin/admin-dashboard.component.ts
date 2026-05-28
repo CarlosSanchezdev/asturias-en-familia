@@ -81,10 +81,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  formatPrice(price: number): string {
-    return price === 0 ? 'Gratis' : `${price} €`;
-  }
-
   formatZone(zone: string): string {
     const map: Record<string, string> = {
       oriente: 'Oriente',

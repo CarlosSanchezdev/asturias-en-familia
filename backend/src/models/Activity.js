@@ -77,10 +77,14 @@ const activitySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    price: {
-      type: Number,
-      min: [0, 'El precio no puede ser negativo'],
-      default: 0,
+    priceText: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
+    free: {
+      type: Boolean,
+      default: false,
     },
     languages: {
       type: [String],
@@ -115,11 +119,6 @@ activitySchema.index({ zone: 1 });
 activitySchema.index({ category: 1 });
 activitySchema.index({ active: 1 });
 activitySchema.index({ name: 'text', description: 'text' }); // búsqueda fulltext
-
-// ─── Virtual: precio formateado ────────────────────────────
-activitySchema.virtual('isFree').get(function () {
-  return this.price === 0;
-});
 
 // ─── Pre-save: calcular posición SVG desde coordenadas ─────
 // Constantes de calibración (ver posicionador-ciudades.html)
