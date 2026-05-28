@@ -146,51 +146,18 @@ Admin rellena formulario → ActivityFormComponent.submit()
 
 ---
 
-## 4. Sistema de posicionamiento SVG
+## 4. Sistema de mapa — Leaflet con SVG overlay
 
-El mapa SVG de Asturias tiene coordenadas propias (píxeles) que no corresponden
-directamente a latitud/longitud. Se usa una **transformación lineal calibrada**
-con ciudades de referencia conocidas.
+El mapa usa Leaflet.js con el SVG de Asturias como capa base
+mediante imageOverlay. Los marcadores son L.marker con DivIcon
+que muestran el icono y color de cada categoría.
 
-### Fórmula de calibración
+Coordenadas: Leaflet usa [lat, lng] directamente desde
+location.coordinates[1] y location.coordinates[0].
 
-```
-svgX = (lng - B_LNG) / A_LNG
-svgY = (lat - B_LAT) / A_LAT
-
-left% = (svgX / SVG_WIDTH)  * 100
-top%  = (svgY / SVG_HEIGHT) * 100
-```
-
-### Constantes actuales
-
-| Constante | Valor | Descripción |
-|-----------|-------|-------------|
-| `A_LNG` | 0.00358282 | Escala horizontal lng→px |
-| `B_LNG` | -7.183398 | Offset horizontal |
-| `A_LAT` | -0.00170741 | Escala vertical lat→px (negativa, eje Y invertido) |
-| `B_LAT` | 43.781844 | Offset vertical |
-| `SVG_W` | 777.74173 px | Ancho del SVG original (ArcGIS) |
-| `SVG_H` | 413.26299 px | Alto del SVG original |
-
-### Ciudades de referencia para calibrar
-
-| Ciudad | Lat real | Lng real | left% esperado | top% esperado |
-|--------|----------|----------|----------------|---------------|
-| Oviedo | 43.3614 | -5.8593 | ~35.9 % | ~24.8 % |
-| Gijón | 43.5454 | -5.6618 | ~41.0 % | ~14.1 % |
-| Avilés | 43.5547 | -5.9249 | ~34.1 % | ~13.6 % |
-
-> Si los marcadores no cuadran con la realidad, usar `posicionador-ciudades.html`
-> para recalibrar visualmente y actualizar las constantes en `Activity.js` y
-> `map-projection.service.ts`.
-
-### Por qué se guarda en la BD
-
-El cálculo se hace en el hook `pre-save` de Mongoose. Esto tiene dos ventajas:
-1. El frontend no necesita recalcular — los valores llegan listos
-2. Si se recalibra la transformación, se puede recalcular con un migration script
-   sin tocar el frontend
+Los campos mapLeft y mapTop del modelo Activity quedan
+como legacy — no se usan en el frontend actual pero se
+mantienen para compatibilidad futura con el SVG inline.
 
 ---
 

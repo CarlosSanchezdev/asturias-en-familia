@@ -1,4 +1,106 @@
-<div style="padding:2rem;font-family:sans-serif">
-  <h1 style="color:#2A4D1E">Panel de administración</h1>
-  <p style="color:#6B6B6B;margin-top:0.5rem">En construcción — Sprint 7</p>
+<div class="dashboard">
+  <!-- Cabecera -->
+  <header class="dashboard__header">
+    <div class="dashboard__header-left">
+      <span class="dashboard__logo">🗺️</span>
+      <h1 class="dashboard__title">Panel de administración</h1>
+    </div>
+    <div class="dashboard__header-right">
+      <a routerLink="/admin/actividades/nueva" class="btn btn--primary">+ Nueva actividad</a>
+      <a routerLink="/admin/solicitudes" class="btn btn--outline">Solicitudes</a>
+      <button class="btn btn--ghost" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- Barra de filtros -->
+  <div class="dashboard__toolbar">
+    <div class="filter-tabs">
+      <button
+        class="filter-tab"
+        [class.filter-tab--active]="statusFilter() === 'todas'"
+        (click)="setFilter('todas')"
+      >Todas</button>
+      <button
+        class="filter-tab"
+        [class.filter-tab--active]="statusFilter() === 'activas'"
+        (click)="setFilter('activas')"
+      >Activas</button>
+      <button
+        class="filter-tab"
+        [class.filter-tab--active]="statusFilter() === 'inactivas'"
+        (click)="setFilter('inactivas')"
+      >Inactivas</button>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="search"
+        class="search-box__input"
+        placeholder="Buscar por nombre…"
+        [value]="searchQuery()"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+
+    <span class="activity-count">{{ filtered().length }} actividades</span>
+  </div>
+
+  <!-- Estado de carga / error -->
+  @if (loading()) {
+    <div class="state-msg">Cargando actividades…</div>
+  } @else if (error()) {
+    <div class="state-msg state-msg--error">{{ error() }}</div>
+  } @else if (filtered().length === 0) {
+    <div class="state-msg">No hay actividades con esos criterios.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Zona</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (activity of filtered(); track activity._id) {
+            <tr [class.row--inactive]="!activity.active">
+              <td class="cell-name">{{ activity.name }}</td>
+              <td>
+                <span class="badge badge--zone">{{ formatZone(activity.zone) }}</span>
+              </td>
+              <td>
+                @if (activity.category) {
+                  <span
+                    class="badge badge--category"
+                    [style.background]="activity.category.color + '22'"
+                    [style.color]="activity.category.color"
+                  >{{ activity.category.name }}</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>{{ formatPrice(activity.price) }}</td>
+              <td>
+                <span class="status-pill" [class.status-pill--active]="activity.active">
+                  {{ activity.active ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td class="cell-actions">
+                <button class="action-btn" title="Editar" (click)="editActivity(activity._id)">✏️</button>
+                <button
+                  class="action-btn"
+                  [title]="activity.active ? 'Desactivar' : 'Activar'"
+                  (click)="toggleActive(activity)"
+                >{{ activity.active ? '🚫' : '✅' }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

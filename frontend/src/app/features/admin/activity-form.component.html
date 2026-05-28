@@ -1,0 +1,195 @@
+<div class="form-page">
+  <!-- Cabecera -->
+  <header class="form-header">
+    <a routerLink="/admin" class="back-link">← Volver al panel</a>
+    <h1 class="form-header__title">
+      {{ isEditMode ? 'Editar actividad' : 'Nueva actividad' }}
+    </h1>
+  </header>
+
+  @if (loading()) {
+    <div class="state-msg">Cargando actividad…</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-body" novalidate>
+
+      <!-- Información principal -->
+      <section class="form-section">
+        <h2 class="form-section__title">Información principal</h2>
+
+        <div class="field">
+          <label class="field__label">Nombre <span class="required">*</span></label>
+          <input formControlName="name" type="text" class="field__input"
+            [class.field__input--error]="nameCtrl.invalid && nameCtrl.touched"
+            placeholder="Nombre de la actividad" maxlength="100" />
+          @if (nameCtrl.invalid && nameCtrl.touched) {
+            <span class="field__error">El nombre es obligatorio (máx. 100 caracteres)</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label">Descripción corta</label>
+          <input formControlName="shortDescription" type="text" class="field__input"
+            placeholder="Resumen breve para el mapa y listados" />
+        </div>
+
+        <div class="field">
+          <label class="field__label">Descripción completa</label>
+          <textarea formControlName="description" class="field__textarea" rows="5"
+            placeholder="Descripción detallada de la actividad"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Categoría <span class="required">*</span></label>
+            <select formControlName="category" class="field__select"
+              [class.field__select--error]="categoryCtrl.invalid && categoryCtrl.touched">
+              <option value="">Selecciona categoría</option>
+              @for (cat of categories(); track cat._id) {
+                <option [value]="cat._id">{{ cat.name }}</option>
+              }
+            </select>
+            @if (categoryCtrl.invalid && categoryCtrl.touched) {
+              <span class="field__error">Selecciona una categoría</span>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field__label">Zona <span class="required">*</span></label>
+            <select formControlName="zone" class="field__select"
+              [class.field__select--error]="zoneCtrl.invalid && zoneCtrl.touched">
+              <option value="">Selecciona zona</option>
+              @for (z of zones; track z.value) {
+                <option [value]="z.value">{{ z.label }}</option>
+              }
+            </select>
+            @if (zoneCtrl.invalid && zoneCtrl.touched) {
+              <span class="field__error">Selecciona una zona</span>
+            }
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Municipio</label>
+          <input formControlName="municipality" type="text" class="field__input"
+            placeholder="Ej: Gijón, Oviedo, Llanes…" />
+        </div>
+      </section>
+
+      <!-- Detalles -->
+      <section class="form-section">
+        <h2 class="form-section__title">Detalles</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Precio (€) <span class="required">*</span></label>
+            <input formControlName="price" type="number" min="0" step="0.5" class="field__input"
+              [class.field__input--error]="priceCtrl.invalid && priceCtrl.touched"
+              placeholder="0 = gratuito" />
+            @if (priceCtrl.invalid && priceCtrl.touched) {
+              <span class="field__error">Introduce un precio válido (0 o mayor)</span>
+            }
+          </div>
+
+          <div class="field field--checkbox">
+            <label class="checkbox-label">
+              <input formControlName="accessible" type="checkbox" class="checkbox-label__input" />
+              <span class="checkbox-label__text">Accesible para personas con movilidad reducida</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Idiomas disponibles</label>
+          <div class="lang-pills">
+            @for (lang of availableLanguages; track lang) {
+              <button
+                type="button"
+                class="lang-pill"
+                [class.lang-pill--selected]="isLangSelected(lang)"
+                (click)="toggleLanguage(lang)"
+              >{{ lang }}</button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Localización -->
+      <section class="form-section">
+        <h2 class="form-section__title">Localización</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Latitud <span class="required">*</span></label>
+            <input formControlName="lat" type="number" step="0.000001" class="field__input"
+              [class.field__input--error]="latCtrl.invalid && latCtrl.touched"
+              placeholder="43.5454" />
+            @if (latCtrl.invalid && latCtrl.touched) {
+              <span class="field__error">La latitud es obligatoria</span>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field__label">Longitud <span class="required">*</span></label>
+            <input formControlName="lng" type="number" step="0.000001" class="field__input"
+              [class.field__input--error]="lngCtrl.invalid && lngCtrl.touched"
+              placeholder="-5.6618" />
+            @if (lngCtrl.invalid && lngCtrl.touched) {
+              <span class="field__error">La longitud es obligatoria</span>
+            }
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Dirección</label>
+          <input formControlName="address" type="text" class="field__input"
+            placeholder="Calle, número, localidad" />
+        </div>
+      </section>
+
+      <!-- Contacto e información adicional -->
+      <section class="form-section">
+        <h2 class="form-section__title">Contacto e información adicional</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Teléfono</label>
+            <input formControlName="phone" type="tel" class="field__input"
+              placeholder="+34 985 000 000" />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Sitio web</label>
+            <input formControlName="website" type="url" class="field__input"
+              placeholder="https://…" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Horario</label>
+          <input formControlName="schedule" type="text" class="field__input"
+            placeholder="Ej: Lun–Vie 9:00–18:00, Sáb 10:00–14:00" />
+        </div>
+
+        <div class="field">
+          <label class="field__label">Consejos y recomendaciones</label>
+          <textarea formControlName="tips" class="field__textarea" rows="3"
+            placeholder="Consejos útiles para los visitantes"></textarea>
+        </div>
+      </section>
+
+      <!-- Error global -->
+      @if (error()) {
+        <div class="form-error" role="alert">{{ error() }}</div>
+      }
+
+      <!-- Acciones -->
+      <div class="form-actions">
+        <a routerLink="/admin" class="btn btn--outline">Cancelar</a>
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : (isEditMode ? 'Guardar cambios' : 'Crear actividad') }}
+        </button>
+      </div>
+
+    </form>
+  }
+</div>

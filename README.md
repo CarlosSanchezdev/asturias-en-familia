@@ -2,7 +2,7 @@
 
 Mapa interactivo de actividades familiares en Asturias.
 
-**Proyecto Intermodular II · DAW · CIFP Avilés · Curso 2024-2025**
+**Proyecto Intermodular II · DAW · CIFP Avilés · Curso 2025-2026**
 
 ---
 
@@ -161,7 +161,6 @@ asturias-en-familia/
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
 ├── .env.example
-└── CLAUDE.md                   # Contexto técnico del proyecto
 ```
 
 ---
@@ -176,7 +175,6 @@ asturias-en-familia/
 | [Contrato API](docs/api/openapi.yaml)                 | OpenAPI 3.0 — todos los endpoints documentados       |
 | [Casos de uso](docs/testing/CASOS-DE-USO.md)          | CUs con criterios de aceptación y tests asociados    |
 | [ADR](docs/adr/ADR.md)                                | Por qué elegimos cada tecnología                     |
-| [CLAUDE.md](CLAUDE.md)                                | Stack, modelos de datos, convenciones de código      |
 
 Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 [editor.swagger.io](https://editor.swagger.io).
@@ -190,7 +188,7 @@ Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 | Frontend      | Angular 17, TypeScript, SCSS, Signals |
 | Backend       | Node.js 20, Express 5, Mongoose       |
 | Base de datos | MongoDB 7 (índice 2dsphere)           |
-| Mapa          | SVG de Asturias + CSS posicionamiento |
+| Mapa          | Leaflet 1.9 + SVG imageOverlay        | Zoom nativo, coordenadas geográficas reales |
 | Testing       | Jest, Jasmine/Karma, Playwright       |
 | CI/CD         | GitHub Actions                        |
 | Contenedores  | Docker + Docker Compose               |
@@ -219,5 +217,4 @@ PR.
 
 ## Equipo
 
-Proyecto desarrollado en el módulo Intermodular II del ciclo DAW en el IES Nº1 de Gijón.
-
+Proyecto desarrollado en el módulo Proyecto del ciclo DAW en el Cifp Aviles.

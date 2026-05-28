@@ -38,6 +38,7 @@ services:
         volumes:
             - ./backend/src:/app/src # hot-reload en dev
             - ./backend/tests:/app/tests
+            - ./backend/uploads:/app/uploads
         healthcheck:
             test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
             interval: 15s

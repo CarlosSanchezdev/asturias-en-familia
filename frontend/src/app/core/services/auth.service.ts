@@ -53,6 +53,26 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
+  restoreSession(): void {
+    const token = this.accessToken();
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        this.logout();
+        return;
+      }
+      const user = {
+        _id: payload.sub ?? payload.id ?? '',
+        email: payload.email ?? '',
+        role: payload.role ?? 'visitor',
+      };
+      if (user.role) this.currentUser.set(user as any);
+    } catch {
+      this.logout();
+    }
+  }
+
   loadCurrentUser(): void {
     if (!this.accessToken()) return;
     this.http.get<User>(`${this.baseUrl}/me`).subscribe({

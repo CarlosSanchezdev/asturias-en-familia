@@ -1,13 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  template: `<main><router-outlet /></main>`,
+  styles: [`main { height: 100vh; display: flex; flex-direction: column; }`]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  private auth = inject(AuthService);
   title = 'Asturias en Familia';
+
+  ngOnInit(): void {
+    this.auth.restoreSession();
+  }
 }
