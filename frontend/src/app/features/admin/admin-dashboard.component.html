@@ -7,7 +7,7 @@
     </div>
     <div class="dashboard__header-right">
       <a routerLink="/admin/actividades/nueva" class="btn btn--primary">+ Nueva actividad</a>
-      <a routerLink="/admin/solicitudes" class="btn btn--outline">Solicitudes</a>
+      <a routerLink="/admin/categorias" class="btn btn--outline">Categorías</a>
       <button class="btn btn--ghost" (click)="logout()">Cerrar sesión</button>
     </div>
   </header>
@@ -83,7 +83,13 @@
                   <span class="text-muted">—</span>
                 }
               </td>
-              <td>{{ formatPrice(activity.price) }}</td>
+              <td>
+                @if (activity.free) {
+                  <span class="badge badge--free">Gratuita</span>
+                } @else {
+                  {{ activity.priceText || '—' }}
+                }
+              </td>
               <td>
                 <span class="status-pill" [class.status-pill--active]="activity.active">
                   {{ activity.active ? 'Activa' : 'Inactiva' }}

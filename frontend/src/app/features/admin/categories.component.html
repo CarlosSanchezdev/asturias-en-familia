@@ -1,0 +1,81 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <div class="dashboard__header-left">
+      <a routerLink="/admin" class="back-link">← Panel</a>
+      <h1 class="dashboard__title">Categorías</h1>
+    </div>
+    <div class="dashboard__header-right">
+      <a routerLink="/admin/categorias/nueva" class="btn btn--primary">+ Nueva categoría</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="state-msg">Cargando categorías…</div>
+  } @else if (error()) {
+    <div class="state-msg state-msg--error">{{ error() }}</div>
+  } @else if (categories().length === 0) {
+    <div class="state-msg">No hay categorías creadas todavía.</div>
+  } @else {
+    <div class="table-wrapper">
+      @if (toggleError()) {
+        <div class="alert alert--error" role="alert">{{ toggleError() }}</div>
+      }
+      <table class="cat-table">
+        <thead>
+          <tr>
+            <th>Icono</th>
+            <th>Nombre</th>
+            <th>Color</th>
+            <th>Orden</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of categories(); track cat._id) {
+            <tr [class.row--inactive]="!cat.active">
+              <td class="cell-icon">
+                <img
+                  [src]="iconUrl(cat.icon)"
+                  [alt]="cat.name"
+                  style="width:32px;height:32px;object-fit:contain;"
+                  onerror="this.onerror=null; this.style.display='none'"
+                />
+              </td>
+              <td>
+                <div class="cell-name">
+                  <span class="cat-name">{{ cat.name }}</span>
+                  @if (cat.description) {
+                    <span class="cat-desc">{{ cat.description }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="color-cell">
+                  <span class="color-swatch" [style.background]="cat.color"></span>
+                  <code class="color-hex">{{ cat.color }}</code>
+                </div>
+              </td>
+              <td>{{ cat.order }}</td>
+              <td>
+                <span class="status-pill" [class.status-pill--active]="cat.active">
+                  {{ cat.active ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td>
+                <div class="cell-actions">
+                  <button class="action-btn" title="Editar" (click)="editCategory(cat._id)">✏️</button>
+                  <button
+                    class="action-btn"
+                    [title]="cat.active ? 'Desactivar' : 'Activar'"
+                    (click)="toggleActive(cat)"
+                  >{{ cat.active ? '🚫' : '✅' }}</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

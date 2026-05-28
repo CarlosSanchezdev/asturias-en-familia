@@ -20,9 +20,21 @@ export const adminRoutes: Routes = [
     title: 'Editar actividad',
   },
   {
-    path: 'solicitudes',
+    path: 'categorias',
     loadComponent: () =>
-      import('./pending-list.component').then((m) => m.PendingListComponent),
-    title: 'Solicitudes pendientes',
+      import('./categories.component').then((m) => m.CategoriesComponent),
+    title: 'Categorías',
+  },
+  {
+    path: 'categorias/nueva',
+    loadComponent: () =>
+      import('./category-form.component').then((m) => m.CategoryFormComponent),
+    title: 'Nueva categoría',
+  },
+  {
+    path: 'categorias/:id/editar',
+    loadComponent: () =>
+      import('./category-form.component').then((m) => m.CategoryFormComponent),
+    title: 'Editar categoría',
   },
 ];

@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -10,10 +10,11 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -22,6 +23,14 @@ export class LoginComponent {
 
   loading = signal(false);
   error = signal('');
+  expiredMessage = '';
+
+  ngOnInit(): void {
+    const expired = this.route.snapshot.queryParamMap.get('expired');
+    if (expired) {
+      this.expiredMessage = 'Tu sesión ha expirado. Inicia sesión de nuevo.';
+    }
+  }
 
   get emailCtrl() { return this.form.get('email')!; }
   get passwordCtrl() { return this.form.get('password')!; }

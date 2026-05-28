@@ -6,6 +6,10 @@
       <p class="login-logo__subtitle">Panel de administración</p>
     </div>
 
+    @if (expiredMessage) {
+      <div class="alert alert--warning" role="alert">{{ expiredMessage }}</div>
+    }
+
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form" novalidate>
       <div class="field">
         <label for="email" class="field__label">Correo electrónico</label>

@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copiar manifiestos e instalar dependencias
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # ─── Development ──────────────────────────────────────────
 FROM node:20-alpine AS development
@@ -12,7 +12,7 @@ WORKDIR /app
 
 COPY package*.json ./
 # En dev instalamos también devDependencies (jest, eslint…)
-RUN npm ci && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 COPY src ./src
 COPY scripts ./scripts

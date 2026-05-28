@@ -12,8 +12,8 @@ export interface Activity {
   municipality?: string;
   images: string[];
   accessible: boolean;
-  price: number;
-  isFree: boolean;
+  priceText?: string;
+  free: boolean;
   languages: string[];
   mapLeft: number;
   mapTop: number;
@@ -31,9 +31,7 @@ export interface Category {
 }
 
 export interface ActivitiesFilters {
-  zone?: string;
   category?: string;
-  accessible?: boolean;
   free?: boolean;
   search?: string;
   page?: number;
@@ -67,10 +65,8 @@ export class ActivitiesService {
     this.filters.set(filters);
 
     let params = new HttpParams();
-    if (filters.zone)       params = params.set('zone', filters.zone);
-    if (filters.category)   params = params.set('category', filters.category);
-    if (filters.accessible) params = params.set('accessible', 'true');
-    if (filters.free)       params = params.set('free', 'true');
+    if (filters.category) params = params.set('category', filters.category);
+    if (filters.free)     params = params.set('free', 'true');
     if (filters.search)     params = params.set('search', filters.search);
     if (filters.page)       params = params.set('page', filters.page.toString());
     if (filters.limit)      params = params.set('limit', filters.limit.toString());

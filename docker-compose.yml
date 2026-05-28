@@ -37,6 +37,7 @@ services:
             - MONGODB_URI=mongodb://mongodb:27017/asturias-familia
         volumes:
             - ./backend/src:/app/src # hot-reload en dev
+            - ./backend/scripts:/app/scripts
             - ./backend/tests:/app/tests
             - ./backend/uploads:/app/uploads
         healthcheck:
