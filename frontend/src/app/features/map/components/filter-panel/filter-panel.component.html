@@ -1,0 +1,34 @@
+<div class="chips-bar">
+  <div class="chips-bar__inner">
+
+    @for (cat of categories; track cat._id) {
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="isCategoryActive(cat._id)"
+        [style.--cat-color]="cat.color"
+        (click)="toggleCategory(cat._id)"
+      >
+        <img
+          [src]="iconUrl(cat.icon)"
+          [alt]="cat.name"
+          class="chip__icon"
+          onerror="this.onerror=null; this.style.display='none'"
+        />
+        {{ cat.name }}
+      </button>
+    }
+
+    <div class="chips-bar__divider" aria-hidden="true"></div>
+
+    <button
+      type="button"
+      class="chip chip--free"
+      [class.chip--free-active]="onlyFree()"
+      (click)="toggleFree()"
+    >
+      💰 Solo gratuitas
+    </button>
+
+  </div>
+</div>

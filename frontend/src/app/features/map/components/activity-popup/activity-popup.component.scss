@@ -10,7 +10,7 @@
   position: fixed;
   inset: 0;
   background: transparent;
-  z-index: 999;
+  z-index: 1001;
 
   @media (max-width: 768px) {
     background: rgba(0, 0, 0, 0.45);
@@ -27,7 +27,7 @@
   background: #fff;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1002;
   animation: slideInRight 0.28s ease;
   scrollbar-width: thin;
 
@@ -41,6 +41,44 @@
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
     animation: slideInBottom 0.28s ease;
+  }
+}
+
+// ─── Tablet portrait / small landscape (768px – 1024px) ───
+@media (min-width: 768px) and (max-width: 1024px) {
+  .popup-backdrop {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .popup-panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
+    animation: slideInBottom 0.28s ease;
+  }
+
+  .popup-hero {
+    height: 140px;
+  }
+}
+
+// ─── Tablet landscape y escritorio (≥ 1024px) ────────────
+@media (min-width: 1024px) {
+  .popup-panel {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: 380px;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.28s ease;
   }
 }
 

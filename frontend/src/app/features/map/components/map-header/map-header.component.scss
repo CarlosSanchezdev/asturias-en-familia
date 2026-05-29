@@ -1,0 +1,150 @@
+:host {
+  display: block;
+}
+
+.map-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 24px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+// ─── Logo ──────────────────────────────────────────────────────
+.map-header__logo {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-header__logo-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.map-header__logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.map-header__logo-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2a4d1e;
+}
+
+.map-header__logo-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b6b6b;
+  letter-spacing: 0.02em;
+}
+
+// ─── Barra de búsqueda ─────────────────────────────────────────
+.map-header__search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.map-header__search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #aaa;
+  pointer-events: none;
+}
+
+.map-header__search-input {
+  width: 100%;
+  padding: 10px 44px;
+  border: 1.5px solid #e8e0d0;
+  border-radius: 99px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: rgba(250, 247, 242, 0.9);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #bbb; }
+
+  &:focus {
+    border-color: #2a4d1e;
+    box-shadow: 0 0 0 3px rgba(42, 77, 30, 0.08);
+    background: #fff;
+  }
+}
+
+.map-header__search-clear {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #e8e0d0;
+  color: #6b6b6b;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #d0c8b8;
+    color: #1a1a1a;
+  }
+}
+
+// ─── Responsive móvil ──────────────────────────────────────────
+@media (max-width: 768px) {
+  .map-header {
+    padding: 10px 14px;
+  }
+
+  .map-header__logo {
+    left: 14px;
+  }
+
+  .map-header__logo-text {
+    display: none;
+  }
+
+  .map-header__logo-icon {
+    font-size: 24px;
+  }
+
+  .map-header__search-wrap {
+    max-width: none;
+  }
+
+  .map-header__search-input {
+    font-size: 14px;
+    padding: 9px 40px;
+  }
+}

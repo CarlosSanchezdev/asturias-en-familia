@@ -5,14 +5,9 @@
 
 #map {
   position: fixed;
-  top: 120px; // 68px header + 52px chips bar
+  top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-@media (max-width: 768px) {
-  #map {
-    top: 120px;
-  }
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
 }

@@ -1,6 +1,7 @@
 import { Component, OnDestroy, AfterViewInit, inject, effect, signal, computed } from "@angular/core";
 import { ActivitiesService, Activity } from "../../core/services/activities.service";
 import { MapProjectionService } from "../../core/services/map-projection.service";
+import { CategoriesService } from "../../core/services/categories.service";
 import { ActivityPopupComponent } from "./components/activity-popup/activity-popup.component";
 import { FilterPanelComponent } from "./components/filter-panel/filter-panel.component";
 import { MapHeaderComponent } from "./components/map-header/map-header.component";
@@ -16,6 +17,7 @@ import * as L from "leaflet";
 export class MapComponent implements AfterViewInit, OnDestroy {
 	readonly activitiesService = inject(ActivitiesService);
 	private readonly projection = inject(MapProjectionService);
+	private readonly categoriesService = inject(CategoriesService);
 	private map!: L.Map;
 	private markersLayer = L.layerGroup();
 
@@ -75,8 +77,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
 		this.map = L.map("map", {
 			center: [43.36, -5.85],
-			zoom: 8,
-			minZoom: 7,
+			zoom: 9.5,
+			minZoom: 8,
 			maxZoom: 12,
 			maxBounds: mapBounds, // ← usa mapBounds aquí
 			maxBoundsViscosity: 1.0,
@@ -88,9 +90,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
 		L.control.zoom({ position: "bottomright" }).addTo(this.map);
 
-		L.imageOverlay("assets/maps/asturias_municipal.svg", svgBounds, {
-			opacity: 0.5,
-		}).addTo(this.map); // ← usa svgBounds aquí
+		L.imageOverlay("assets/maps/asturias_municipal.svg", svgBounds, {}).addTo(this.map); // ← usa svgBounds aquí
 
 		L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 			attribution: "© OpenStreetMap",
@@ -101,33 +101,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 		(window as any)["debugMap"] = this.map;
 	}
 
-	private readonly CATEGORY_EMOJI: Record<string, string> = {
-		rutas: "🥾",
-		acuario: "🐟",
-		caballos: "🐴",
-		museos: "🏛️",
-		parques: "🌳",
-		playas: "🏖️",
-		faros: "🗼",
-	};
-
 	private createCategoryIcon(category: any): L.DivIcon {
 		const mobile = window.innerWidth < 768;
-		const size = mobile ? 44 : 36;
-		const fontSize = mobile ? 22 : 18;
-		const emoji = this.CATEGORY_EMOJI[category?.slug] ?? "📍";
-		const color = category?.color || "#2A4D1E";
+		const size = mobile ? 36 : 28;
+		const iconFile = category?.icon;
 
-		const html = `<div style="
-			width:${size}px;height:${size}px;
-			background:${color};
-			border-radius:50%;
-			border:2px solid white;
-			box-shadow:0 2px 6px rgba(0,0,0,0.3);
-			display:flex;align-items:center;justify-content:center;
-			cursor:pointer;
-			font-size:${fontSize}px;line-height:1;
-		">${emoji}</div>`;
+		const html = iconFile
+			? `<img src="${this.categoriesService.iconUrl(iconFile)}"
+				style="width:${size}px;height:${size}px;object-fit:contain;
+				filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));cursor:pointer;"
+				/>`
+			: `<span style="font-size:${size * 0.7}px;line-height:1;
+				filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));cursor:pointer;"
+				>📍</span>`;
 
 		return L.divIcon({
 			html,

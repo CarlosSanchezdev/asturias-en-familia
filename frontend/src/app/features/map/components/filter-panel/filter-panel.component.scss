@@ -1,0 +1,86 @@
+:host {
+  display: block;
+}
+
+.chips-bar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+.chips-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  justify-content: center;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.chips-bar__divider {
+  width: 1px;
+  height: 24px;
+  background: #e8e0d0;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+// ─── Chip base ─────────────────────────────────────────────────
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background: var(--cat-color, #2a4d1e);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.72;
+  transition: opacity 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+  &__icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: brightness(0) invert(1);
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &--active {
+    opacity: 1;
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--cat-color, #2a4d1e);
+  }
+
+  &--free {
+    background: #2a4d1e;
+  }
+
+  &--free-active {
+    opacity: 1;
+    border-color: #fff;
+    box-shadow: 0 0 0 2px #2a4d1e;
+  }
+}
