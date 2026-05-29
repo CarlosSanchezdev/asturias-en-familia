@@ -16,6 +16,9 @@ build/
 # Docker volúmenes
 mongo_data/
 
+# Archivos subidos por usuarios (datos en runtime, no código)
+backend/uploads/
+
 # Logs
 *.log
 npm-debug.log*

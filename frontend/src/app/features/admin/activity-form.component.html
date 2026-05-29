@@ -17,6 +17,24 @@
         <h2 class="form-section__title">Información principal</h2>
 
         <div class="field">
+          <label class="field__label">Imagen principal</label>
+          <div class="image-upload">
+            @if (imagePreview()) {
+              <div class="image-preview">
+                <img [src]="imagePreview()" alt="Vista previa" class="image-preview__img"
+                  onerror="this.onerror=null; this.style.display='none'" />
+                <button type="button" class="image-remove-btn" (click)="removeImage()">✕ Eliminar</button>
+              </div>
+            }
+            <label class="file-btn" [class.file-btn--uploading]="imageUploading()">
+              <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only"
+                [disabled]="imageUploading()" (change)="onImageChange($event)" />
+              {{ imageUploading() ? 'Subiendo…' : (imagePreview() ? 'Cambiar imagen' : 'Seleccionar imagen') }}
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
           <label class="field__label">Nombre <span class="required">*</span></label>
           <input formControlName="name" type="text" class="field__input"
             [class.field__input--error]="nameCtrl.invalid && nameCtrl.touched"

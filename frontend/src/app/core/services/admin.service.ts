@@ -13,6 +13,7 @@ export interface ActivityPayload {
   priceText?: string;
   free?: boolean;
   accessible?: boolean;
+  images?: string[];
   languages: string[];
   location: { type: 'Point'; coordinates: [number, number] };
   mapLeft: number;
@@ -55,5 +56,14 @@ export class AdminService {
 
   deleteActivity(id: string) {
     return this.http.delete(`${this.base}/activities/${id}`);
+  }
+
+  uploadActivityImage(file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ url: string; filename: string }>(
+      `${this.base}/uploads/activity-image`,
+      formData
+    );
   }
 }

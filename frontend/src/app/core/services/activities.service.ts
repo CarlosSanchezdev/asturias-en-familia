@@ -5,7 +5,8 @@ import { environment } from '../../../environments/environment';
 export interface Activity {
   _id: string;
   name: string;
-  description: string;
+  shortDescription?: string;
+  description?: string;
   category: Category;
   location: { type: string; coordinates: [number, number] };
   zone: 'oriente' | 'centro' | 'occidente';
@@ -15,6 +16,11 @@ export interface Activity {
   priceText?: string;
   free: boolean;
   languages: string[];
+  website?: string;
+  phone?: string;
+  address?: string;
+  schedule?: string;
+  tips?: string;
   mapLeft: number;
   mapTop: number;
   active: boolean;

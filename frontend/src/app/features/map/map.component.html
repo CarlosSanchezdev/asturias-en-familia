@@ -1,2 +1,9 @@
 <div id="map"></div>
 <div class="counter">{{ activitiesService.filteredCount() }} actividades</div>
+
+@if (activitiesService.selectedActivity(); as activity) {
+  <aef-activity-popup
+    [activity]="activity"
+    (close)="activitiesService.selectActivity(null)"
+  />
+}
