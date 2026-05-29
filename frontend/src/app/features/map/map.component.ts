@@ -1,13 +1,15 @@
-import { Component, OnDestroy, AfterViewInit, inject, effect } from "@angular/core";
+import { Component, OnDestroy, AfterViewInit, inject, effect, signal, computed } from "@angular/core";
 import { ActivitiesService, Activity } from "../../core/services/activities.service";
 import { MapProjectionService } from "../../core/services/map-projection.service";
 import { ActivityPopupComponent } from "./components/activity-popup/activity-popup.component";
+import { FilterPanelComponent } from "./components/filter-panel/filter-panel.component";
+import { MapHeaderComponent } from "./components/map-header/map-header.component";
 import * as L from "leaflet";
 
 @Component({
 	selector: "aef-map",
 	standalone: true,
-	imports: [ActivityPopupComponent],
+	imports: [ActivityPopupComponent, FilterPanelComponent, MapHeaderComponent],
 	templateUrl: "./map.component.html",
 	styleUrl: "./map.component.scss",
 })
@@ -17,10 +19,36 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 	private map!: L.Map;
 	private markersLayer = L.layerGroup();
 
+	readonly activeCategories = signal<string[]>([]);
+	readonly onlyFree = signal(false);
+	readonly searchText = signal("");
+
+	readonly filteredActivities = computed(() => {
+		let result = this.activitiesService.activities();
+
+		const cats = this.activeCategories();
+		if (cats.length > 0) {
+			result = result.filter(a => {
+				const catId = typeof a.category === "object" ? a.category._id : (a.category as string);
+				return cats.includes(catId);
+			});
+		}
+
+		if (this.onlyFree()) {
+			result = result.filter(a => a.free);
+		}
+
+		const q = this.searchText().trim().toLowerCase();
+		if (q) {
+			result = result.filter(a => a.name.toLowerCase().includes(q));
+		}
+
+		return result;
+	});
+
 	constructor() {
-		// effect() requiere contexto de inyección → va en el constructor
 		effect(() => {
-			const activities = this.activitiesService.activities();
+			const activities = this.filteredActivities();
 			if (this.map) {
 				this.renderMarkers(activities);
 			}
@@ -28,15 +56,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 	}
 
 	ngAfterViewInit(): void {
-		// El elemento #map debe existir en el DOM antes de inicializar Leaflet
 		this.initMap();
 		this.activitiesService.loadActivities();
+		this.activitiesService.loadCategories();
 	}
 
 	private initMap(): void {
-		const asturiasBounds: L.LatLngBoundsExpression = [
-			[42.9144, -7.5979],
-			[43.9364, -4.0417],
+		const mapBounds: L.LatLngBoundsExpression = [
+			[42.8, -7.5],
+			[43.8, -4.2],
+		];
+
+		// Bounds del SVG — solo para calibrar el overlay
+		const svgBounds: L.LatLngBoundsExpression = [
+			[42.71, -7.64],
+			[43.85, -4.04],
 		];
 
 		this.map = L.map("map", {
@@ -44,36 +78,27 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			zoom: 8,
 			minZoom: 7,
 			maxZoom: 12,
-			maxBounds: asturiasBounds,
+			maxBounds: mapBounds, // ← usa mapBounds aquí
 			maxBoundsViscosity: 1.0,
-			zoomControl: true,
+			zoomControl: false,
 			wheelPxPerZoomLevel: 120,
 			zoomSnap: 0.5,
 			zoomDelta: 0.5,
 		});
 
-		// this.map.on('click', (e: L.LeafletMouseEvent) => {
-		// 	console.log('CLICK lat:', e.latlng.lat.toFixed(4), 'lng:', e.latlng.lng.toFixed(4));
-		// });
+		L.control.zoom({ position: "bottomright" }).addTo(this.map);
 
-		L.imageOverlay("assets/maps/asturias_municipal.svg", asturiasBounds).addTo(this.map);
+		L.imageOverlay("assets/maps/asturias_municipal.svg", svgBounds, {
+			opacity: 0.5,
+		}).addTo(this.map); // ← usa svgBounds aquí
 
-		// Marcadores de calibración — ELIMINAR DESPUÉS DE CALIBRAR
-		const ciudadesRef = [
-			{ name: "Oviedo", lat: 43.3614, lng: -5.8593, color: "red" },
-			{ name: "Gijón", lat: 43.5454, lng: -5.6618, color: "blue" },
-			{ name: "Avilés", lat: 43.5547, lng: -5.9249, color: "green" },
-		];
+		L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+			attribution: "© OpenStreetMap",
+		}).addTo(this.map);
 
-		ciudadesRef.forEach(ciudad => {
-			L.marker([ciudad.lat, ciudad.lng])
-				.bindTooltip(ciudad.name, { permanent: true, direction: "top" })
-				.addTo(this.map);
-		});
-
-		document.getElementById("map")!.style.background = "#FDF8F0";
-
+		document.getElementById("map")!.style.background = "#f0fafd81";
 		this.markersLayer.addTo(this.map);
+		(window as any)["debugMap"] = this.map;
 	}
 
 	private readonly CATEGORY_EMOJI: Record<string, string> = {
@@ -87,37 +112,37 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 	};
 
 	private createCategoryIcon(category: any): L.DivIcon {
+		const mobile = window.innerWidth < 768;
+		const size = mobile ? 44 : 36;
+		const fontSize = mobile ? 22 : 18;
 		const emoji = this.CATEGORY_EMOJI[category?.slug] ?? "📍";
 		const color = category?.color || "#2A4D1E";
 
 		const html = `<div style="
-			width:36px;height:36px;
+			width:${size}px;height:${size}px;
 			background:${color};
 			border-radius:50%;
 			border:2px solid white;
 			box-shadow:0 2px 6px rgba(0,0,0,0.3);
 			display:flex;align-items:center;justify-content:center;
 			cursor:pointer;
-			font-size:18px;line-height:1;
+			font-size:${fontSize}px;line-height:1;
 		">${emoji}</div>`;
 
 		return L.divIcon({
 			html,
 			className: "",
-			iconSize: [36, 36],
-			iconAnchor: [18, 18],
+			iconSize: [size, size],
+			iconAnchor: [size / 2, size / 2],
 		});
 	}
 
 	private renderMarkers(activities: Activity[]): void {
 		this.markersLayer.clearLayers();
 		activities.forEach(activity => {
-			console.log("category:", activity.category);
 			const [lng, lat] = activity.location.coordinates;
-			const [corrLat, corrLng] = this.projection.correctCoords(lat, lng);
-
 			const icon = this.createCategoryIcon(activity.category);
-			const marker = L.marker([corrLat, corrLng], { icon });
+			const marker = L.marker([lat, lng], { icon });
 			marker.bindTooltip(activity.name);
 			marker.on("click", () => this.activitiesService.selectActivity(activity));
 			marker.addTo(this.markersLayer);
@@ -128,4 +153,3 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 		this.map.remove();
 	}
 }
-

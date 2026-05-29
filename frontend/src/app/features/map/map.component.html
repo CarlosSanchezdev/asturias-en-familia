@@ -1,5 +1,14 @@
+<aef-map-header
+  (searchChange)="searchText.set($event)"
+/>
+
+<aef-filter-panel
+  [categories]="activitiesService.categories()"
+  (categoriesChange)="activeCategories.set($event)"
+  (freeChange)="onlyFree.set($event)"
+/>
+
 <div id="map"></div>
-<div class="counter">{{ activitiesService.filteredCount() }} actividades</div>
 
 @if (activitiesService.selectedActivity(); as activity) {
   <aef-activity-popup
