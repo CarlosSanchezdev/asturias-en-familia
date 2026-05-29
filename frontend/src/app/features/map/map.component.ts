@@ -1,11 +1,13 @@
 import { Component, OnDestroy, AfterViewInit, inject, effect } from "@angular/core";
 import { ActivitiesService, Activity } from "../../core/services/activities.service";
 import { MapProjectionService } from "../../core/services/map-projection.service";
+import { ActivityPopupComponent } from "./components/activity-popup/activity-popup.component";
 import * as L from "leaflet";
 
 @Component({
 	selector: "aef-map",
 	standalone: true,
+	imports: [ActivityPopupComponent],
 	templateUrl: "./map.component.html",
 	styleUrl: "./map.component.scss",
 })

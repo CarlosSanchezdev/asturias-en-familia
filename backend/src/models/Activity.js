@@ -8,6 +8,11 @@ const activitySchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, 'El nombre no puede superar 100 caracteres'],
     },
+    shortDescription: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+    },
     description: {
       type: String,
       trim: true,

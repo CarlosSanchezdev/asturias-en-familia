@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminService, ActivityPayload } from '../../core/services/admin.service';
 import { Category } from '../../core/services/activities.service';
+import { environment } from '../../../environments/environment';
 
 // Transformación lat/lng → posición SVG
 const A_LNG = 0.00358282;
@@ -40,6 +41,10 @@ export class ActivityFormComponent implements OnInit {
   loading = signal(false);
   saving = signal(false);
   error = signal('');
+
+  images = signal<string[]>([]);
+  imageUploading = signal(false);
+  imagePreview = signal('');
 
   editId = signal<string | null>(null);
   get isEditMode() { return !!this.editId(); }
@@ -87,12 +92,16 @@ export class ActivityFormComponent implements OnInit {
             languages: activity.languages ?? [],
             lat,
             lng,
-            website: (activity as any).website ?? '',
-            phone: (activity as any).phone ?? '',
-            address: (activity as any).address ?? '',
-            schedule: (activity as any).schedule ?? '',
-            tips: (activity as any).tips ?? '',
+            website: activity.website ?? '',
+            phone: activity.phone ?? '',
+            address: activity.address ?? '',
+            schedule: activity.schedule ?? '',
+            tips: activity.tips ?? '',
           });
+          if (activity.images?.length) {
+            this.images.set(activity.images);
+            this.imagePreview.set(`${environment.apiUrl}${activity.images[0]}`);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -144,6 +153,7 @@ export class ActivityFormComponent implements OnInit {
       address: v.address ?? undefined,
       schedule: v.schedule ?? undefined,
       tips: v.tips ?? undefined,
+      images: this.images(),
     };
 
     this.saving.set(true);
@@ -160,6 +170,28 @@ export class ActivityFormComponent implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  onImageChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.imageUploading.set(true);
+    this.admin.uploadActivityImage(file).subscribe({
+      next: (res) => {
+        this.images.set([res.url]);
+        this.imagePreview.set(`${environment.apiUrl}${res.url}`);
+        this.imageUploading.set(false);
+      },
+      error: () => {
+        this.error.set('Error al subir la imagen');
+        this.imageUploading.set(false);
+      },
+    });
+  }
+
+  removeImage(): void {
+    this.images.set([]);
+    this.imagePreview.set('');
   }
 
   get nameCtrl() { return this.form.get('name')!; }

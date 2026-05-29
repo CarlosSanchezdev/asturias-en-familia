@@ -2,19 +2,18 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-const uploadDir = 'uploads/icons';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+function createStorage(dir, prefix) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, dir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `${prefix}-${Date.now()}${ext}`);
+    },
+  });
+}
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = `icon-${Date.now()}${ext}`;
-    cb(null, name);
-  },
-});
-
-const fileFilter = (_req, file, cb) => {
+const imageFilter = (_req, file, cb) => {
   const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) cb(null, true);
@@ -22,7 +21,13 @@ const fileFilter = (_req, file, cb) => {
 };
 
 export const uploadIcon = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB máximo
+  storage: createStorage('uploads/icons', 'icon'),
+  fileFilter: imageFilter,
+  limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+export const uploadActivityImage = multer({
+  storage: createStorage('uploads/activities', 'activity'),
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB para fotos
 });
