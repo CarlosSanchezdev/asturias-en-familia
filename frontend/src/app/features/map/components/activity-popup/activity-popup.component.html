@@ -1,20 +1,20 @@
 <!-- Backdrop: visible en móvil, transparente en escritorio -->
-<div class="popup-backdrop" (click)="close.emit()" role="presentation"></div>
+<div class="popup-backdrop" [class.is-closing]="closing()" (click)="requestClose()" role="presentation"></div>
 
-<aside class="popup-panel" role="dialog" [attr.aria-label]="activity.name">
+<aside class="popup-panel" [class.is-closing]="closing()" role="dialog" [attr.aria-label]="activity.name">
 
   <!-- Hero: imagen o placeholder con color de categoría -->
-  <div class="popup-hero" [style.background]="(activity.category.color ?? '#2A4D1E') + '22'">
-    @if (activity.images?.length) {
+  <div class="popup-hero" [style.background]="activity.category.color + '22'">
+    @if (activity.images.length) {
     <img [src]="imageUrl(activity.images[0])" [alt]="activity.name" class="popup-hero__img"
       onerror="this.onerror=null; this.style.display='none'" />
     } @else {
     <div class="popup-hero__placeholder">
-      <img [src]="iconUrl(activity.category?.icon ?? '')" [alt]="activity.category?.name ?? ''" class="popup-hero__icon"
+      <img [src]="iconUrl(activity.category.icon)" [alt]="activity.category.name" class="popup-hero__icon"
         onerror="this.onerror=null; this.style.display='none'" />
     </div>
     }
-    <button class="popup-close" (click)="close.emit()" aria-label="Cerrar">✕</button>
+    <button class="popup-close" (click)="requestClose()" aria-label="Cerrar">✕</button>
   </div>
 
   <!-- Contenido -->
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Idiomas -->
-    @if (activity.languages?.length) {
+    @if (activity.languages.length) {
     <div class="popup-langs">
       @for (lang of activity.languages; track lang) {
       <span class="popup-lang">{{ lang }}</span>

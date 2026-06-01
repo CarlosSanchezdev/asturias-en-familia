@@ -1,81 +1,79 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "asturias-en-familia": {
-      "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss",
-          "standalone": true
-        },
-        "@schematics/angular:directive": { "standalone": true },
-        "@schematics/angular:pipe": { "standalone": true }
-      },
-      "root": "",
-      "sourceRoot": "src",
-      "prefix": "aef",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:application",
-          "options": {
-            "outputPath": "dist/asturias-en-familia",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
-            "tsConfig": "tsconfig.app.json",
-            "assets": [
-              "src/assets"
-            ],
-            "styles": ["src/styles.scss"],
-            "scripts": []
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                { "type": "initial", "maximumWarning": "500kb", "maximumError": "1mb" },
-                { "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
-              ],
-              "outputHashing": "all"
-            },
-            "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": { "buildTarget": "asturias-en-familia:build:production" },
-            "development": { "buildTarget": "asturias-en-familia:build:development" }
-          },
-          "defaultConfiguration": "development",
-          "options": {
-            "proxyConfig": "proxy.conf.json"
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "tsconfig.spec.json",
-            "assets": [
-              { "glob": "**/*", "input": "public" },
-              { "glob": "**/*", "input": "src/assets", "output": "assets" }
-            ],
-            "styles": ["src/styles.scss"],
-            "scripts": [],
-            "codeCoverage": true
-          }
-        }
-      }
-    }
-  },
-  "cli": {
-    "analytics": "cf186325-a9aa-43e5-92f7-3f2e3fa8b708"
-  }
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"newProjectRoot": "projects",
+	"projects": {
+		"asturias-en-familia": {
+			"projectType": "application",
+			"schematics": {
+				"@schematics/angular:component": {
+					"style": "scss",
+					"standalone": true
+				},
+				"@schematics/angular:directive": { "standalone": true },
+				"@schematics/angular:pipe": { "standalone": true }
+			},
+			"root": "",
+			"sourceRoot": "src",
+			"prefix": "aef",
+			"architect": {
+				"build": {
+					"builder": "@angular-devkit/build-angular:application",
+					"options": {
+						"outputPath": "dist/asturias-en-familia",
+						"index": "src/index.html",
+						"browser": "src/main.ts",
+						"polyfills": ["zone.js"],
+						"tsConfig": "tsconfig.app.json",
+						"assets": ["src/favicon.ico", "src/assets"],
+						"styles": ["src/styles.scss"],
+						"scripts": []
+					},
+					"configurations": {
+						"production": {
+							"budgets": [
+								{ "type": "initial", "maximumWarning": "500kb", "maximumError": "1mb" },
+								{ "type": "anyComponentStyle", "maximumWarning": "2kb", "maximumError": "4kb" }
+							],
+							"outputHashing": "all"
+						},
+						"development": {
+							"optimization": false,
+							"extractLicenses": false,
+							"sourceMap": true
+						}
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"configurations": {
+						"production": { "buildTarget": "asturias-en-familia:build:production" },
+						"development": { "buildTarget": "asturias-en-familia:build:development" }
+					},
+					"defaultConfiguration": "development",
+					"options": {
+						"proxyConfig": "proxy.conf.json"
+					}
+				},
+				"test": {
+					"builder": "@angular-devkit/build-angular:karma",
+					"options": {
+						"polyfills": ["zone.js", "zone.js/testing"],
+						"tsConfig": "tsconfig.spec.json",
+						"assets": [
+							{ "glob": "**/*", "input": "public", "output": "/" },
+							{ "glob": "**/*", "input": "src/assets", "output": "assets" }
+						],
+						"styles": ["src/styles.scss"],
+						"scripts": [],
+						"codeCoverage": true
+					}
+				}
+			}
+		}
+	},
+	"cli": {
+		"analytics": "cf186325-a9aa-43e5-92f7-3f2e3fa8b708"
+	}
 }

@@ -15,6 +15,10 @@
   @media (max-width: 768px) {
     background: rgba(0, 0, 0, 0.45);
   }
+
+  &.is-closing {
+    animation: fadeOut 0.28s ease forwards;
+  }
 }
 
 // ─── Panel ─────────────────────────────────────────────────
@@ -29,6 +33,10 @@
   overflow-y: auto;
   z-index: 1002;
   animation: slideInRight 0.28s ease;
+
+  &.is-closing {
+    animation: slideOutRight 0.28s ease forwards;
+  }
   scrollbar-width: thin;
 
   @media (max-width: 768px) {
@@ -41,6 +49,10 @@
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.18);
     animation: slideInBottom 0.28s ease;
+
+    &.is-closing {
+      animation: slideOutBottom 0.28s ease forwards;
+    }
   }
 }
 
@@ -88,9 +100,24 @@
   to   { transform: translateX(0); }
 }
 
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
 @keyframes slideInBottom {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
+}
+
+@keyframes slideOutBottom {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 // ─── Hero ──────────────────────────────────────────────────

@@ -16,10 +16,16 @@ export class ActivityPopupComponent {
 
   private categoriesService = inject(CategoriesService);
   expanded = signal(false);
+  closing = signal(false);
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.close.emit();
+    this.requestClose();
+  }
+
+  requestClose(): void {
+    this.closing.set(true);
+    setTimeout(() => this.close.emit(), 280);
   }
 
   iconUrl(icon: string): string {

@@ -1,6 +1,5 @@
 import { Component, OnDestroy, AfterViewInit, inject, effect, signal, computed } from "@angular/core";
 import { ActivitiesService, Activity } from "../../core/services/activities.service";
-import { MapProjectionService } from "../../core/services/map-projection.service";
 import { CategoriesService } from "../../core/services/categories.service";
 import { ActivityPopupComponent } from "./components/activity-popup/activity-popup.component";
 import { FilterPanelComponent } from "./components/filter-panel/filter-panel.component";
@@ -16,13 +15,14 @@ import * as L from "leaflet";
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
 	readonly activitiesService = inject(ActivitiesService);
-	private readonly projection = inject(MapProjectionService);
 	private readonly categoriesService = inject(CategoriesService);
 	private map!: L.Map;
 	private markersLayer = L.layerGroup();
 
 	readonly activeCategories = signal<string[]>([]);
 	readonly onlyFree = signal(false);
+	readonly activeZone = signal<string>("");
+	readonly onlyAccessible = signal(false);
 	readonly searchText = signal("");
 
 	readonly filteredActivities = computed(() => {
@@ -40,6 +40,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			result = result.filter(a => a.free);
 		}
 
+		const zone = this.activeZone();
+		if (zone) {
+			result = result.filter(a => a.zone === zone);
+		}
+
+		if (this.onlyAccessible()) {
+			result = result.filter(a => a.accessible);
+		}
+
 		const q = this.searchText().trim().toLowerCase();
 		if (q) {
 			result = result.filter(a => a.name.toLowerCase().includes(q));
@@ -47,6 +56,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
 		return result;
 	});
+
+	readonly resultCount = computed(() => this.filteredActivities().length);
 
 	constructor() {
 		effect(() => {
@@ -75,10 +86,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			[43.85, -4.04],
 		];
 
+		const isMobile = window.innerWidth < 768;
+		const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+		const isLargeTablet = window.innerWidth >= 1024 && window.innerWidth <= 1440;
+		const initialZoom = isMobile ? 8 : isTablet ? 9 : isLargeTablet ? 9 : 10;
+
 		this.map = L.map("map", {
 			center: [43.36, -5.85],
-			zoom: 9.5,
-			minZoom: 8,
+			zoom: initialZoom,
+			minZoom: isMobile ? 7 : 8,
 			maxZoom: 12,
 			maxBounds: mapBounds, // ← usa mapBounds aquí
 			maxBoundsViscosity: 1.0,
@@ -86,6 +102,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			wheelPxPerZoomLevel: 120,
 			zoomSnap: 0.5,
 			zoomDelta: 0.5,
+		});
+
+		window.addEventListener("resize", () => {
+			const newMobile = window.innerWidth < 768;
+			if (newMobile) {
+				this.map.setZoom(8.5);
+			}
 		});
 
 		L.control.zoom({ position: "bottomright" }).addTo(this.map);
@@ -103,23 +126,46 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
 	private createCategoryIcon(category: any): L.DivIcon {
 		const mobile = window.innerWidth < 768;
-		const size = mobile ? 36 : 28;
+		const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+		const size = mobile ? 24 : isTablet ? 28 : 32;
+		const tip = Math.round(size * 0.45);
+		const half = Math.round(size * 0.32);
+		const iconPx = Math.round(size * 0.52);
+		const color = category?.color || "#2A4D1E";
 		const iconFile = category?.icon;
 
-		const html = iconFile
+		const inner = iconFile
 			? `<img src="${this.categoriesService.iconUrl(iconFile)}"
-				style="width:${size}px;height:${size}px;object-fit:contain;
-				filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));cursor:pointer;"
-				/>`
-			: `<span style="font-size:${size * 0.7}px;line-height:1;
-				filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));cursor:pointer;"
-				>📍</span>`;
+				style="width:${iconPx}px;height:${iconPx}px;object-fit:contain;" />`
+			: `<span style="font-size:${iconPx}px;line-height:1;">📍</span>`;
+
+		const html = `
+			<div style="position:relative;width:${size}px;cursor:pointer;
+				filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));">
+				<div style="
+					width:${size}px;height:${size}px;
+					background:white;
+					border-radius:50%;
+					border:3px solid ${color};
+					display:flex;align-items:center;justify-content:center;
+					overflow:hidden;box-sizing:border-box;">
+					${inner}
+				</div>
+				<div style="
+					position:absolute;bottom:-${tip}px;left:50%;
+					transform:translateX(-50%);
+					width:0;height:0;
+					border-left:${half}px solid transparent;
+					border-right:${half}px solid transparent;
+					border-top:${tip}px solid ${color};">
+				</div>
+			</div>`;
 
 		return L.divIcon({
 			html,
 			className: "",
-			iconSize: [size, size],
-			iconAnchor: [size / 2, size / 2],
+			iconSize: [size, size + tip],
+			iconAnchor: [size / 2, size + tip + 5],
 		});
 	}
 
@@ -129,10 +175,53 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			const [lng, lat] = activity.location.coordinates;
 			const icon = this.createCategoryIcon(activity.category);
 			const marker = L.marker([lat, lng], { icon });
-			marker.bindTooltip(activity.name);
+			let tooltipTimeout: ReturnType<typeof setTimeout>;
+
+			marker.on("mouseover", () => {
+				tooltipTimeout = setTimeout(() => {
+					marker
+						.bindTooltip(this.createTooltipHTML(activity), {
+							permanent: false,
+							direction: "top",
+							offset: [0, -10],
+							className: "custom-map-tooltip",
+							opacity: 1,
+						})
+						.openTooltip();
+				}, 250);
+			});
+
+			marker.on("mouseout", () => {
+				clearTimeout(tooltipTimeout);
+				marker.closeTooltip();
+				marker.unbindTooltip();
+			});
+
 			marker.on("click", () => this.activitiesService.selectActivity(activity));
 			marker.addTo(this.markersLayer);
 		});
+	}
+
+	private createTooltipHTML(activity: Activity): string {
+		return `<div>
+			<strong style="font-size:13px;display:block;margin-bottom:4px">
+				${activity.name}
+			</strong>
+			<p style="font-size:12px;color:#555;margin:0 0 6px 0;line-height:1.3">
+				${activity.description?.slice(0, 60) ?? ""}...
+			</p>
+			<span style="font-size:11px;color:#2A4D1E;font-weight:600;cursor:pointer">
+				Haz clic en el icono para ver m&aacute;s
+			</span>
+		</div>`;
+	}
+
+	clearFilters(): void {
+		this.activeZone.set("");
+		this.activeCategories.set([]);
+		this.onlyFree.set(false);
+		this.onlyAccessible.set(false);
+		this.searchText.set("");
 	}
 
 	ngOnDestroy(): void {

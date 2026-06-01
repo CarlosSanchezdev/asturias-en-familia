@@ -1,34 +1,107 @@
 <div class="chips-bar">
-  <div class="chips-bar__inner">
 
-    @for (cat of categories; track cat._id) {
-      <button
-        type="button"
-        class="chip"
-        [class.chip--active]="isCategoryActive(cat._id)"
-        [style.--cat-color]="cat.color"
-        (click)="toggleCategory(cat._id)"
-      >
-        <img
-          [src]="iconUrl(cat.icon)"
-          [alt]="cat.name"
-          class="chip__icon"
-          onerror="this.onerror=null; this.style.display='none'"
-        />
+  <!-- Desktop izquierda: zonas -->
+  <div class="chips-bar__left">
+    <div class="chips-bar__zones">
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('oriente')" (click)="selectZone('oriente')">
+        Oriente
+      </button>
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('centro')" (click)="selectZone('centro')">
+        Centro
+      </button>
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('occidente')"
+        (click)="selectZone('occidente')">
+        Occidente
+      </button>
+    </div>
+    <div class="chips-bar__divider" aria-hidden="true"></div>
+  </div>
+
+  <!-- Centro: categorías con slider (desktop + móvil) -->
+  <div class="chips-bar__cats-wrap">
+    <div class="chips-bar__inner" #chipsScroll (scroll)="onScroll()">
+      @for (cat of categories; track cat._id) {
+      <button type="button" class="chip" [class.chip--active]="isCategoryActive(cat._id)"
+        [style.--cat-color]="cat.color" (click)="toggleCategory(cat._id)">
+        <img [src]="iconUrl(cat.icon)" [alt]="cat.name" class="chip__icon"
+          onerror="this.onerror=null; this.style.display='none'" />
         {{ cat.name }}
       </button>
+      }
+    </div>
+
+    @if (canScrollLeft()) {
+    <button type="button" class="chips-bar__nav chips-bar__nav--left" (click)="scrollChips('left')"
+      aria-label="Desplazar filtros a la izquierda">‹</button>
     }
+    @if (canScrollRight()) {
+    <button type="button" class="chips-bar__nav chips-bar__nav--right" (click)="scrollChips('right')"
+      aria-label="Desplazar filtros a la derecha">›</button>
+    }
+  </div>
 
+  <!-- Desktop derecha: extras -->
+  <div class="chips-bar__right">
     <div class="chips-bar__divider" aria-hidden="true"></div>
+    <div class="chips-bar__extras">
+      <button type="button" class="chip chip--free" [class.chip--free-active]="onlyFree()" (click)="toggleFree()">
+        💰 Solo gratuitas
+      </button>
+      <button type="button" class="chip chip--accessible" [class.chip--accessible-active]="onlyAccessible()"
+        (click)="toggleAccessible()">
+        ♿ Accesible
+      </button>
+    </div>
+  </div>
 
-    <button
-      type="button"
-      class="chip chip--free"
-      [class.chip--free-active]="onlyFree()"
-      (click)="toggleFree()"
-    >
-      💰 Solo gratuitas
+  <!-- Móvil: botón de filtros -->
+  <button type="button" class="chips-bar__settings" (click)="openDrawer()" aria-label="Abrir filtros">⚙️</button>
+
+</div>
+
+<!-- Móvil: drawer de filtros -->
+@if (drawerOpen()) {
+<div class="drawer-overlay" (click)="closeDrawer()" aria-hidden="true"></div>
+
+<div class="drawer" role="dialog" aria-modal="true" aria-label="Filtros">
+  <h2 class="drawer__title">Filtros</h2>
+
+  <div class="drawer__section">
+    <p class="drawer__label">Zona</p>
+    <div class="drawer__pills">
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('oriente')" (click)="selectZone('oriente')">
+        Oriente
+      </button>
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('centro')" (click)="selectZone('centro')">
+        Centro
+      </button>
+      <button type="button" class="pill" [class.pill--active]="isZoneActive('occidente')"
+        (click)="selectZone('occidente')">
+        Occidente
+      </button>
+    </div>
+  </div>
+
+  <div class="drawer__section">
+    <p class="drawer__label">Opciones</p>
+    <div class="drawer__toggles">
+      <button type="button" class="chip chip--free" [class.chip--free-active]="onlyFree()" (click)="toggleFree()">
+        💰 Solo gratuitas
+      </button>
+      <button type="button" class="chip chip--accessible" [class.chip--accessible-active]="onlyAccessible()"
+        (click)="toggleAccessible()">
+        ♿ Accesible
+      </button>
+    </div>
+  </div>
+
+  <div class="drawer__actions">
+    <button type="button" class="drawer__btn drawer__btn--clear" (click)="clearFilters()">
+      Limpiar filtros
     </button>
-
+    <button type="button" class="drawer__btn drawer__btn--apply" (click)="closeDrawer()">
+      Ver {{ resultCount }} actividades
+    </button>
   </div>
 </div>
+}

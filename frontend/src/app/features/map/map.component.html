@@ -1,18 +1,21 @@
-<aef-map-header
-  (searchChange)="searchText.set($event)"
-/>
+<aef-map-header (searchChange)="searchText.set($event)" />
 
-<aef-filter-panel
-  [categories]="activitiesService.categories()"
-  (categoriesChange)="activeCategories.set($event)"
-  (freeChange)="onlyFree.set($event)"
-/>
+<aef-filter-panel [categories]="activitiesService.categories()" (categoriesChange)="activeCategories.set($event)"
+  (freeChange)="onlyFree.set($event)" (zoneChange)="activeZone.set($event)"
+  (accessibleChange)="onlyAccessible.set($event)" />
+
+<p class="result-count">{{ resultCount() }} actividades</p>
 
 <div id="map"></div>
 
+@if (resultCount() === 0) {
+<div class="empty-state">
+  <span class="empty-state__icon">🗺️</span>
+  <p class="empty-state__message">No hay actividades con los filtros seleccionados</p>
+  <button class="empty-state__button" (click)="clearFilters()">Limpiar filtros</button>
+</div>
+}
+
 @if (activitiesService.selectedActivity(); as activity) {
-  <aef-activity-popup
-    [activity]="activity"
-    (close)="activitiesService.selectActivity(null)"
-  />
+<aef-activity-popup [activity]="activity" (close)="activitiesService.selectActivity(null)" />
 }

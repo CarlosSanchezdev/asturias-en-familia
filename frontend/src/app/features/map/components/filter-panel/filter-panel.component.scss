@@ -1,86 +1,411 @@
 :host {
-  display: block;
+	display: block;
 }
 
 .chips-bar {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  width: 100%;
-  z-index: 999;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  box-sizing: border-box;
+	position: fixed;
+	top: 86px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: fit-content;
+	max-width: 75vw;
+	z-index: 999;
+	display: flex;
+	align-items: center;
+	padding: 8px 14px;
+	font-family: "DM Sans", system-ui, sans-serif;
+	box-sizing: border-box;
+}
+
+// ─── Izquierda: zonas ────────────────────────────────────────
+.chips-bar__left {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.chips-bar__zones {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+// ─── Centro: slider de categorías (ocupa el resto) ───────────
+.chips-bar__cats-wrap {
+	flex: 1;
+	min-width: 0;
+	position: relative;
+
+	// Degradado fade en los extremos, visible solo cuando hay flecha
+	&::before,
+	&::after {
+		content: "";
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 40px;
+		z-index: 1;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+
+	&::before {
+		left: 0;
+		background: linear-gradient(to right, #fdf8f0, transparent);
+	}
+
+	&::after {
+		right: 0;
+		background: linear-gradient(to left, #fdf8f0, transparent);
+	}
+
+	&:has(.chips-bar__nav--left)::before {
+		opacity: 1;
+	}
+
+	&:has(.chips-bar__nav--right)::after {
+		opacity: 1;
+	}
 }
 
 .chips-bar__inner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 24px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  white-space: nowrap;
-  justify-content: center;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+	scroll-behavior: smooth;
 
-  &::-webkit-scrollbar { display: none; }
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
+// ─── Derecha: extras ──────────────────────────────────────────
+.chips-bar__right {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.chips-bar__extras {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+// ─── Divider ──────────────────────────────────────────────────
 .chips-bar__divider {
-  width: 1px;
-  height: 24px;
-  background: #e8e0d0;
-  flex-shrink: 0;
-  margin: 0 4px;
+	width: 1px;
+	height: 22px;
+	background: rgba(150, 130, 100, 0.35);
+	flex-shrink: 0;
+}
+
+// ─── Botones de navegación del slider ────────────────────────
+.chips-bar__nav {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 2;
+	width: 36px;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	color: rgba(42, 77, 30, 0.75);
+	font-size: 20px;
+	font-weight: 300;
+	line-height: 1;
+	transition: color 0.15s;
+
+	&--left {
+		left: 0;
+		justify-content: flex-start;
+		padding-left: 2px;
+		background: none;
+	}
+
+	&--right {
+		right: 0;
+		justify-content: flex-end;
+		padding-right: 2px;
+		background: none;
+	}
+
+	&:hover {
+		color: #2a4d1e;
+	}
 }
 
 // ─── Chip base ─────────────────────────────────────────────────
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 16px;
-  border: 2px solid transparent;
-  border-radius: 99px;
-  background: var(--cat-color, #2a4d1e);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  opacity: 0.72;
-  transition: opacity 0.15s, border-color 0.15s, box-shadow 0.15s;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border: 2px solid transparent;
+	border-radius: 99px;
+	background: var(--cat-color, #2a4d1e);
+	color: #fff;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	flex-shrink: 0;
+	opacity: 0.72;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+	transition:
+		opacity 0.15s,
+		border-color 0.15s,
+		box-shadow 0.15s;
 
-  &__icon {
-    width: 16px;
-    height: 16px;
-    object-fit: contain;
-    flex-shrink: 0;
-    filter: brightness(0) invert(1);
-  }
+	&__icon {
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+		flex-shrink: 0;
+		filter: brightness(0) invert(1);
+	}
 
-  &:hover {
-    opacity: 0.9;
-  }
+	&:hover {
+		opacity: 0.9;
+	}
 
-  &--active {
-    opacity: 1;
-    border-color: #fff;
-    box-shadow: 0 0 0 2px var(--cat-color, #2a4d1e);
-  }
+	&--active {
+		opacity: 1;
+		border-color: rgba(255, 255, 255, 0.9);
+		border-width: 2.5px;
+		filter: brightness(1.15);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+	}
 
-  &--free {
-    background: #2a4d1e;
-  }
+	&--free {
+		background: #2a4d1e;
+	}
 
-  &--free-active {
-    opacity: 1;
-    border-color: #fff;
-    box-shadow: 0 0 0 2px #2a4d1e;
-  }
+	&--free-active {
+		opacity: 1;
+		border-color: rgba(255, 255, 255, 0.9);
+		border-width: 2.5px;
+		filter: brightness(1.15);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+	}
+
+	&--accessible {
+		background: #2a4d1e;
+	}
+
+	&--accessible-active {
+		opacity: 1;
+		border-color: rgba(255, 255, 255, 0.9);
+		border-width: 2.5px;
+		filter: brightness(1.15);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+	}
 }
+
+// ─── Zone Pills ────────────────────────────────────────────────
+.pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 7px 14px;
+	border: 1.5px solid #e8e0d0;
+	border-radius: 99px;
+	background: rgba(255, 250, 245, 0.92);
+	color: #333;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	flex-shrink: 0;
+	transition: all 0.15s ease;
+	box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		border-color: #2a4d1e;
+	}
+
+	&--active {
+		background: #2a4d1e;
+		color: #fff;
+		border-color: #2a4d1e;
+		box-shadow: 0 2px 6px rgba(42, 77, 30, 0.3);
+	}
+}
+
+// ─── Botón de ajustes (solo móvil) ───────────────────────────
+.chips-bar__settings {
+	display: none;
+	width: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	border: none;
+	border-radius: 50%;
+	background: #2a4d1e;
+	color: #fff;
+	font-size: 16px;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.15s;
+
+	&:hover {
+		background: #1e3815;
+	}
+}
+
+// ─── Responsive móvil ──────────────────────────────────────────
+@media (max-width: 768px) {
+	.chips-bar {
+		flex-direction: row;
+		align-items: center;
+		top: 45px;
+		width: fit-content;
+		max-width: calc(100vw - 24px);
+		padding: 6px 10px;
+		gap: 8px;
+	}
+
+	.chips-bar__left,
+	.chips-bar__right {
+		display: none;
+	}
+
+	.chips-bar__settings {
+		display: flex;
+	}
+
+	.pill {
+		padding: 4px 8px;
+		font-size: 10px;
+	}
+
+	.chip {
+		padding: 4px 8px;
+		font-size: 10px;
+	}
+}
+
+// ─── Overlay del drawer ────────────────────────────────────────
+.drawer-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	z-index: 1001;
+	animation: fadeIn 0.2s ease forwards;
+}
+
+// ─── Drawer desde abajo ───────────────────────────────────────
+.drawer {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: #fff;
+	border-radius: 16px 16px 0 0;
+	padding: 20px;
+	z-index: 1002;
+	font-family: "DM Sans", system-ui, sans-serif;
+	animation: slideUp 0.3s ease forwards;
+
+	&__title {
+		font-size: 18px;
+		font-weight: 600;
+		color: #1a1a1a;
+		margin: 0 0 20px;
+		font-family: "Playfair Display", serif;
+	}
+
+	&__section {
+		margin-bottom: 16px;
+	}
+
+	&__label {
+		font-size: 11px;
+		font-weight: 600;
+		color: #999;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin: 0 0 10px;
+	}
+
+	&__pills {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	&__toggles {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 10px;
+		margin-top: 24px;
+	}
+
+	&__btn {
+		flex: 1;
+		padding: 12px 16px;
+		border-radius: 99px;
+		font-family: inherit;
+		font-size: 14px;
+		font-weight: 500;
+		cursor: pointer;
+		transition:
+			background 0.15s,
+			color 0.15s;
+
+		&--clear {
+			background: transparent;
+			border: 1.5px solid #e8e0d0;
+			color: #555;
+
+			&:hover {
+				border-color: #2a4d1e;
+				color: #2a4d1e;
+			}
+		}
+
+		&--apply {
+			background: #2a4d1e;
+			border: none;
+			color: #fff;
+
+			&:hover {
+				background: #1e3815;
+			}
+		}
+	}
+}
+
+// ─── Animaciones ──────────────────────────────────────────────
+@keyframes slideUp {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
