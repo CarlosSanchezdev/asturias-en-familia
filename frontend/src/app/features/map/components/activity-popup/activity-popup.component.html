@@ -1,23 +1,20 @@
 <!-- Backdrop: visible en móvil, transparente en escritorio -->
-<div class="popup-backdrop" (click)="close.emit()" role="presentation"></div>
+<div class="popup-backdrop" [class.is-closing]="closing()" (click)="requestClose()" role="presentation"></div>
 
-<aside class="popup-panel" role="dialog" [attr.aria-label]="activity.name">
+<aside class="popup-panel" [class.is-closing]="closing()" role="dialog" [attr.aria-label]="activity.name">
 
   <!-- Hero: imagen o placeholder con color de categoría -->
-  <div class="popup-hero" [style.background]="(activity.category?.color ?? '#2A4D1E') + '22'">
-    @if (activity.images?.length) {
-      <img [src]="imageUrl(activity.images[0])" [alt]="activity.name" class="popup-hero__img" onerror="this.onerror=null; this.style.display='none'" />
+  <div class="popup-hero" [style.background]="activity.category.color + '22'">
+    @if (activity.images.length) {
+    <img [src]="imageUrl(activity.images[0])" [alt]="activity.name" class="popup-hero__img"
+      onerror="this.onerror=null; this.style.display='none'" />
     } @else {
-      <div class="popup-hero__placeholder">
-        <img
-          [src]="iconUrl(activity.category?.icon ?? '')"
-          [alt]="activity.category?.name ?? ''"
-          class="popup-hero__icon"
-          onerror="this.onerror=null; this.style.display='none'"
-        />
-      </div>
+    <div class="popup-hero__placeholder">
+      <img [src]="iconUrl(activity.category.icon)" [alt]="activity.category.name" class="popup-hero__icon"
+        onerror="this.onerror=null; this.style.display='none'" />
+    </div>
     }
-    <button class="popup-close" (click)="close.emit()" aria-label="Cerrar">✕</button>
+    <button class="popup-close" (click)="requestClose()" aria-label="Cerrar">✕</button>
   </div>
 
   <!-- Contenido -->
@@ -25,11 +22,8 @@
 
     <!-- Badge de categoría -->
     @if (activity.category) {
-      <span
-        class="popup-cat-badge"
-        [style.background]="activity.category.color + '22'"
-        [style.color]="activity.category.color"
-      >{{ activity.category.name }}</span>
+    <span class="popup-cat-badge" [style.background]="activity.category.color + '22'"
+      [style.color]="activity.category.color">{{ activity.category.name }}</span>
     }
 
     <!-- Nombre -->
@@ -37,54 +31,54 @@
 
     <!-- Descripción corta -->
     @if (activity.shortDescription) {
-      <p class="popup-short-desc">{{ activity.shortDescription }}</p>
+    <p class="popup-short-desc">{{ activity.shortDescription }}</p>
     }
 
     <!-- Meta: municipio y precio -->
     <div class="popup-meta">
       @if (activity.municipality) {
-        <span class="popup-meta__item">📍 {{ activity.municipality }}</span>
+      <span class="popup-meta__item">📍 {{ activity.municipality }}</span>
       }
       @if (activity.free) {
-        <span class="popup-meta__badge popup-meta__badge--free">Gratuita</span>
+      <span class="popup-meta__badge popup-meta__badge--free">Gratuita</span>
       } @else if (activity.priceText) {
-        <span class="popup-meta__item popup-meta__item--price">{{ activity.priceText }}</span>
+      <span class="popup-meta__item popup-meta__item--price">{{ activity.priceText }}</span>
       }
     </div>
 
     <!-- Idiomas -->
-    @if (activity.languages?.length) {
-      <div class="popup-langs">
-        @for (lang of activity.languages; track lang) {
-          <span class="popup-lang">{{ lang }}</span>
-        }
-      </div>
+    @if (activity.languages.length) {
+    <div class="popup-langs">
+      @for (lang of activity.languages; track lang) {
+      <span class="popup-lang">{{ lang }}</span>
+      }
+    </div>
     }
 
     <!-- Contacto -->
     @if (activity.website || activity.phone) {
-      <div class="popup-contact">
-        @if (activity.website) {
-          <a [href]="activity.website" target="_blank" rel="noopener noreferrer" class="popup-link">
-            🌐 Sitio web
-          </a>
-        }
-        @if (activity.phone) {
-          <a [href]="'tel:' + activity.phone" class="popup-link">
-            📞 {{ activity.phone }}
-          </a>
-        }
-      </div>
+    <div class="popup-contact">
+      @if (activity.website) {
+      <a [href]="activity.website" target="_blank" rel="noopener noreferrer" class="popup-link">
+        🌐 Sitio web
+      </a>
+      }
+      @if (activity.phone) {
+      <a [href]="'tel:' + activity.phone" class="popup-link">
+        📞 {{ activity.phone }}
+      </a>
+      }
+    </div>
     }
 
     <!-- Descripción completa (expandible) -->
     @if (activity.description) {
-      <div class="popup-desc" [class.popup-desc--expanded]="expanded()">
-        <p>{{ activity.description }}</p>
-      </div>
-      <button type="button" class="popup-expand-btn" (click)="toggleExpand()">
-        {{ expanded() ? '▲ Leer menos' : '▼ Leer más' }}
-      </button>
+    <div class="popup-desc" [class.popup-desc--expanded]="expanded()">
+      <p>{{ activity.description }}</p>
+    </div>
+    <button type="button" class="popup-expand-btn" (click)="toggleExpand()">
+      {{ expanded() ? '▲ Leer menos' : '▼ Leer más' }}
+    </button>
     }
 
   </div>

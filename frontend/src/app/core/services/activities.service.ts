@@ -53,9 +53,11 @@ export interface PaginatedResponse<T> {
 export class ActivitiesService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/api/activities`;
+  private categoriesUrl = `${environment.apiUrl}/api/categories`;
 
   // ─── Estado reactivo con signals ──────────────────────────
   readonly activities = signal<Activity[]>([]);
+  readonly categories = signal<Category[]>([]);
   readonly selectedActivity = signal<Activity | null>(null);
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
@@ -64,6 +66,12 @@ export class ActivitiesService {
   readonly filteredCount = computed(() => this.activities().length);
 
   // ─── Métodos ───────────────────────────────────────────────
+
+  loadCategories(): void {
+    this.http.get<Category[]>(this.categoriesUrl).subscribe({
+      next: (cats) => this.categories.set(cats),
+    });
+  }
 
   loadActivities(filters: ActivitiesFilters = {}): void {
     this.isLoading.set(true);
