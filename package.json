@@ -1,0 +1,27 @@
+{
+	"name": "asturias-en-familia",
+	"version": "1.0.0",
+	"description": "Mapa interactivo de actividades familiares en Asturias.",
+	"main": "index.js",
+	"directories": {
+		"doc": "docs"
+	},
+	"scripts": {},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CarlosSanchezdev/asturias-en-familia.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"bugs": {
+		"url": "https://github.com/CarlosSanchezdev/asturias-en-familia/issues"
+	},
+	"homepage": "https://github.com/CarlosSanchezdev/asturias-en-familia#readme",
+	"devDependencies": {
+		"@playwright/test": "^1.60.0",
+		"@types/node": "^25.9.1"
+	}
+}
+
