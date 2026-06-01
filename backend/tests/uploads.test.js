@@ -1,0 +1,60 @@
+import request from 'supertest';
+import mongoose from 'mongoose';
+import app from '../src/server.js';
+import User from '../src/models/User.js';
+
+const MONGODB_URI = process.env.MONGODB_URI ||
+    'mongodb://localhost:27018/asturias-test';
+
+let adminToken = '';
+
+beforeAll(async () => {
+    await mongoose.connect(MONGODB_URI);
+
+    const exists = await User.findOne({ email: 'admin@asturias-familia.es' });
+    if (!exists) {
+        const passwordHash = await User.hashPassword('Admin1234');
+        await User.create({
+            email: 'admin@asturias-familia.es',
+            passwordHash,
+            role: 'admin'
+        });
+    }
+
+    const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@asturias-familia.es', password: 'Admin1234' });
+    adminToken = loginRes.body.accessToken;
+}, 30000);
+
+afterAll(async () => {
+    await mongoose.disconnect();
+});
+
+describe('POST /api/uploads/icon', () => {
+    it('devuelve 401 sin token', async () => {
+        const res = await request(app).post('/api/uploads/icon');
+        expect(res.status).toBe(401);
+    });
+
+    it('devuelve 400 con token admin pero sin archivo', async () => {
+        const res = await request(app)
+            .post('/api/uploads/icon')
+            .set('Authorization', `Bearer ${adminToken}`);
+        expect(res.status).toBe(400);
+    }, 10000);
+});
+
+describe('POST /api/uploads/activity-image', () => {
+    it('devuelve 401 sin token', async () => {
+        const res = await request(app).post('/api/uploads/activity-image');
+        expect(res.status).toBe(401);
+    });
+
+    it('devuelve 400 con token admin pero sin archivo', async () => {
+        const res = await request(app)
+            .post('/api/uploads/activity-image')
+            .set('Authorization', `Bearer ${adminToken}`);
+        expect(res.status).toBe(400);
+    }, 10000);
+});
