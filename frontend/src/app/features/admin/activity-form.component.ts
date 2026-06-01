@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminService, ActivityPayload } from '../../core/services/admin.service';
 import { Category } from '../../core/services/activities.service';
 import { environment } from '../../../environments/environment';
+import * as L from 'leaflet';
 
 // Transformación lat/lng → posición SVG
 const A_LNG = 0.00358282;
@@ -48,6 +49,10 @@ export class ActivityFormComponent implements OnInit {
 
   editId = signal<string | null>(null);
   get isEditMode() { return !!this.editId(); }
+
+  private coordMap: L.Map | null = null;
+  private coordMarker: L.Marker | null = null;
+  readonly mapPickerOpen = signal(false);
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -192,6 +197,57 @@ export class ActivityFormComponent implements OnInit {
   removeImage(): void {
     this.images.set([]);
     this.imagePreview.set('');
+  }
+
+  openMapPicker(): void {
+    this.mapPickerOpen.set(true);
+    setTimeout(() => {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconUrl: 'assets/leaflet/marker-icon.png',
+        iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+        shadowUrl: 'assets/leaflet/marker-shadow.png',
+      });
+
+      this.coordMap = L.map('coord-picker-map', {
+        center: [43.36, -5.85],
+        zoom: 8,
+        zoomControl: true,
+      });
+
+      const svgBounds: L.LatLngBoundsExpression = [[42.71, -7.64], [43.85, -4.04]];
+      L.imageOverlay('assets/maps/asturias_municipal.svg', svgBounds).addTo(this.coordMap);
+      this.coordMap.setMaxBounds(svgBounds);
+
+      const lat = this.form.get('lat')?.value;
+      const lng = this.form.get('lng')?.value;
+      if (lat != null && lng != null) {
+        this.coordMarker = L.marker([lat, lng]).addTo(this.coordMap);
+        this.coordMap.setView([lat, lng], 10);
+      }
+
+      this.coordMap.on('click', (e: L.LeafletMouseEvent) => {
+        const { lat: clickLat, lng: clickLng } = e.latlng;
+        if (this.coordMarker) {
+          this.coordMarker.setLatLng([clickLat, clickLng]);
+        } else {
+          this.coordMarker = L.marker([clickLat, clickLng]).addTo(this.coordMap!);
+        }
+        this.form.patchValue({
+          lat: parseFloat(clickLat.toFixed(6)),
+          lng: parseFloat(clickLng.toFixed(6)),
+        });
+      });
+    }, 100);
+  }
+
+  closeMapPicker(): void {
+    this.mapPickerOpen.set(false);
+    if (this.coordMap) {
+      this.coordMap.remove();
+      this.coordMap = null;
+    }
+    this.coordMarker = null;
   }
 
   get nameCtrl() { return this.form.get('name')!; }
