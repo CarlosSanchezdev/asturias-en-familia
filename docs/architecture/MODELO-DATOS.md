@@ -39,11 +39,17 @@
 │                        occidente    │
 │ municipality String                 │
 │ images       [String]  URLs         │
-│ accessible   Boolean   default:F    │
-│ price        Number    ≥0, def:0    │
-│ languages    [String]  def:['es']   │
-│ mapLeft      Number    0-100%       │
-│ mapTop       Number    0-100%       │
+│ accessible      Boolean   default:F │
+│ priceText       String    max:200   │
+│ free            Boolean   default:F │
+│ languages       [String]  def:['es']│
+│ website         String              │
+│ phone           String              │
+│ address         String              │
+│ schedule        String              │
+│ tips            String              │
+│ mapLeft         Number    0-100%    │
+│ mapTop          Number    0-100%    │
 │ active       Boolean   default:true │
 │ createdAt    Date      auto         │
 │ updatedAt    Date      auto         │
@@ -146,9 +152,14 @@
 	"municipality": "Cangas de Onís",
 	"images": ["https://example.com/ruta-oso-1.jpg", "https://example.com/ruta-oso-2.jpg"],
 	"accessible": false,
-	"price": 0,
-	"isFree": true,
+	"priceText": "Gratuito",
+	"free": true,
 	"languages": ["es"],
+	"website": "https://example.com",
+	"phone": "+34 985 000 000",
+	"address": "Cangas de Onís, Asturias",
+	"schedule": "Abierto todo el año",
+	"tips": "Llevar calzado de montaña y agua",
 	"mapLeft": 72.34,
 	"mapTop": 28.91,
 	"active": true,
@@ -187,7 +198,12 @@
 | `municipality`         | String   | ❌       | trim                              |
 | `images`               | [String] | ❌       | default: []                       |
 | `accessible`           | Boolean  | ❌       | default: false                    |
-| `price`                | Number   | ❌       | min: 0, default: 0                |
+| `free`                 | Boolean  | ❌       | trim                              |
+| `website`              | String   | ❌       | trim                              |
+| `phone`                | String   | ❌       | trim                              |
+| `address`              | String   | ❌       | trim                              |
+| `schedule`             | String   | ❌       | trim                              |
+| `tips`                 | String   | ❌       | trim, maxLength: 500              |
 | `languages`            | [String] | ❌       | default: ['es']                   |
 | `mapLeft`              | Number   | ❌       | Calculado automáticamente [0,100] |
 | `mapTop`               | Number   | ❌       | Calculado automáticamente [0,100] |
@@ -229,5 +245,13 @@ coordinates: [-5.6618, 43.5454]; // [lng, lat] → Gijón
 coordinates: [43.5454, -5.6618]; // [lat, lng] → no funciona con 2dsphere
 ```
 
-El frontend recibe las coordenadas en este orden y las usa para el cálculo SVG. La transformación lineal espera
-`coordinates[0]` como longitud y `coordinates[1]` como latitud.
+El frontend recibe las coordenadas en este orden. Leaflet las consume como:
+
+```javascript
+// coordinates[0] = longitud → L.latLng(coordinates[1], coordinates[0])
+// coordinates[1] = latitud
+L.marker([activity.location.coordinates[1], activity.location.coordinates[0]]);
+```
+
+Los campos `mapLeft` y `mapTop` se mantienen en el modelo como legacy del diseño inicial con SVG inline. No se usan en
+el frontend actual pero se conservan por compatibilidad.

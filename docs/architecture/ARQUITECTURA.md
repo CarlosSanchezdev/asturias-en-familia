@@ -1,14 +1,13 @@
 # Arquitectura Técnica — Asturias en Familia
 
-**Versión:** 1.0 · **Fecha:** 2025
+**Versión:** 1.1 · **Proyecto:** Intermodular II · DAW · CIFP Avilés · 2025-2026
 
 ---
 
 ## 1. Visión general
 
-Asturias en Familia es una SPA (Single Page Application) con arquitectura
-cliente-servidor clásica, desplegada en contenedores Docker. El usuario final
-interactúa con un mapa SVG de Asturias sobre el que aparecen marcadores de
+Asturias en Familia es una SPA (Single Page Application) con arquitectura cliente-servidor clásica, desplegada en
+contenedores Docker. El usuario final interactúa con un mapa SVG de Asturias sobre el que aparecen marcadores de
 actividades familiares filtradas en tiempo real.
 
 ### Diagrama de componentes
@@ -68,35 +67,39 @@ actividades familiares filtradas en tiempo real.
 ## 2. Stack tecnológico
 
 ### Frontend
-| Tecnología | Versión | Motivo de elección |
-|------------|---------|-------------------|
-| Angular | 17 | Criterio del módulo de DAW. Standalone components y signals son el enfoque moderno |
-| TypeScript | 5.4 | Tipado estricto, mejor DX en equipos pequeños |
-| RxJS | 7.8 | Gestión de streams HTTP; signals para estado local |
-| SCSS | — | Variables, anidado, legibilidad frente a CSS puro |
+
+| Tecnología | Versión | Motivo de elección                                                                 |
+| ---------- | ------- | ---------------------------------------------------------------------------------- |
+| Angular    | 17      | Criterio del módulo de DAW. Standalone components y signals son el enfoque moderno |
+| TypeScript | 5.4     | Tipado estricto, mejor DX en equipos pequeños                                      |
+| RxJS       | 7.8     | Gestión de streams HTTP; signals para estado local                                 |
+| SCSS       | —       | Variables, anidado, legibilidad frente a CSS puro                                  |
 
 ### Backend
-| Tecnología | Versión | Motivo de elección |
-|------------|---------|-------------------|
-| Node.js | 20 LTS | Misma plataforma que el frontend (TypeScript/JS), curva de aprendizaje menor |
-| Express | 5 | Mínimo y explícito. Express 5 incluye manejo de errores async nativo |
-| Mongoose | 8 | ODM maduro, validaciones declarativas, hooks pre/post |
-| JWT (jsonwebtoken) | 9 | Autenticación stateless, compatible con microservicios futuros |
-| bcryptjs | 2.4 | Hashing de contraseñas probado en producción |
-| express-validator | 7 | Validación de entradas declarativa, integrada con Express |
+
+| Tecnología         | Versión | Motivo de elección                                                           |
+| ------------------ | ------- | ---------------------------------------------------------------------------- |
+| Node.js            | 20 LTS  | Misma plataforma que el frontend (TypeScript/JS), curva de aprendizaje menor |
+| Express            | 5       | Mínimo y explícito. Express 5 incluye manejo de errores async nativo         |
+| Mongoose           | 8       | ODM maduro, validaciones declarativas, hooks pre/post                        |
+| JWT (jsonwebtoken) | 9       | Autenticación stateless, compatible con microservicios futuros               |
+| bcryptjs           | 2.4     | Hashing de contraseñas probado en producción                                 |
+| express-validator  | 7       | Validación de entradas declarativa, integrada con Express                    |
 
 ### Base de datos
-| Tecnología | Versión | Motivo de elección |
-|------------|---------|-------------------|
-| MongoDB | 7 | Esquema flexible para actividades con atributos heterogéneos. Índice 2dsphere para consultas geoespaciales |
+
+| Tecnología | Versión | Motivo de elección                                                                                         |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| MongoDB    | 7       | Esquema flexible para actividades con atributos heterogéneos. Índice 2dsphere para consultas geoespaciales |
 
 ### Infraestructura
-| Tecnología | Versión | Motivo |
-|------------|---------|--------|
-| Docker | 24+ | Entorno reproducible, sin "en mi máquina funciona" |
-| Docker Compose | 2+ | Orquestación local sencilla con healthchecks |
-| Nginx | 1.27 | Proxy inverso + servidor de estáticos en producción |
-| GitHub Actions | — | CI/CD gratuito, bien integrado con el repositorio |
+
+| Tecnología     | Versión | Motivo                                              |
+| -------------- | ------- | --------------------------------------------------- |
+| Docker         | 24+     | Entorno reproducible, sin "en mi máquina funciona"  |
+| Docker Compose | 2+      | Orquestación local sencilla con healthchecks        |
+| Nginx          | 1.27    | Proxy inverso + servidor de estáticos en producción |
+| GitHub Actions | —       | CI/CD gratuito, bien integrado con el repositorio   |
 
 ---
 
@@ -148,16 +151,13 @@ Admin rellena formulario → ActivityFormComponent.submit()
 
 ## 4. Sistema de mapa — Leaflet con SVG overlay
 
-El mapa usa Leaflet.js con el SVG de Asturias como capa base
-mediante imageOverlay. Los marcadores son L.marker con DivIcon
-que muestran el icono y color de cada categoría.
+El mapa usa Leaflet.js con el SVG de Asturias como capa base mediante imageOverlay. Los marcadores son L.marker con
+DivIcon que muestran el icono y color de cada categoría.
 
-Coordenadas: Leaflet usa [lat, lng] directamente desde
-location.coordinates[1] y location.coordinates[0].
+Coordenadas: Leaflet usa [lat, lng] directamente desde location.coordinates[1] y location.coordinates[0].
 
-Los campos mapLeft y mapTop del modelo Activity quedan
-como legacy — no se usan en el frontend actual pero se
-mantienen para compatibilidad futura con el SVG inline.
+Los campos mapLeft y mapTop del modelo Activity quedan como legacy — no se usan en el frontend actual pero se mantienen
+para compatibilidad futura con el SVG inline.
 
 ---
 
@@ -167,25 +167,22 @@ mantienen para compatibilidad futura con el SVG inline.
 
 - **Access token:** 15 min, firmado con `JWT_SECRET`, contiene `{ sub, email, role }`
 - **Refresh token:** 7 días, permite renovar el access token
-- El frontend guarda el access token en `sessionStorage` (no `localStorage`)
-  para que expire al cerrar la pestaña
-- Las rutas admin están protegidas en el backend (source of truth) y en el
-  frontend (UX, no seguridad)
+- El frontend guarda el access token en `sessionStorage` (no `localStorage`) para que expire al cerrar la pestaña
+- Las rutas admin están protegidas en el backend (source of truth) y en el frontend (UX, no seguridad)
 
 ### Validación de entradas
 
-Todo dato que entra al backend pasa por `express-validator` antes de llegar
-al controlador. Si hay errores, se devuelve 400 antes de tocar la base de datos.
+Todo dato que entra al backend pasa por `express-validator` antes de llegar al controlador. Si hay errores, se devuelve
+400 antes de tocar la base de datos.
 
 ### Soft delete
 
-Las actividades no se borran físicamente. `DELETE /api/activities/:id` pone
-`active: false`. Esto permite auditoría y recuperación de datos.
+Las actividades no se borran físicamente. `DELETE /api/activities/:id` pone `active: false`. Esto permite auditoría y
+recuperación de datos.
 
 ### CORS
 
-En desarrollo: `http://localhost:4200`
-En producción: configurar `CORS_ORIGIN` con el dominio real.
+En desarrollo: `http://localhost:4200` En producción: configurar `CORS_ORIGIN` con el dominio real.
 
 ---
 
@@ -221,10 +218,11 @@ readonly filteredCount = computed(() => this.activities().length);
 ```
 
 **Por qué signals y no NgRx:**
+
 - El estado de esta app es simple (una lista + un elemento seleccionado + filtros)
 - NgRx añadiría boilerplate innecesario para el MVP
-- Los signals son la dirección oficial de Angular; NgRx queda para apps con
-  estado muy complejo o colaboración entre muchos módulos
+- Los signals son la dirección oficial de Angular; NgRx queda para apps con estado muy complejo o colaboración entre
+  muchos módulos
 
 ---
 
@@ -252,6 +250,7 @@ app/
 ```
 
 **Regla de dependencias:**
+
 - `features` puede usar `core` y `shared`
 - `core` NO puede usar `features`
 - `shared` NO puede usar `core` ni `features`

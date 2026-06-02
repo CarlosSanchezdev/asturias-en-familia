@@ -1,25 +1,9 @@
-# Guía de Contribución — Asturias en Familia
-
----
-
-## Flujo de trabajo con Git
-
-Seguimos **GitHub Flow** simplificado:
-
-```
-main ──────────────────────────────────── producción (estable)
-  └── develop ────────────────────────── integración continua
-        ├── feature/S2-01-modelo-activity
-        ├── feature/S5-03-marcadores-mapa
-        └── fix/S6-02-filtro-zona-bug
-```
-
 ### Ramas protegidas
 
-| Rama | Requisitos para merge |
-|------|-----------------------|
-| `main` | Pipeline verde + 2 revisiones |
-| `develop` | Pipeline verde + 1 revisión |
+| Rama      | Requisitos para merge         |
+| --------- | ----------------------------- |
+| `main`    | Pipeline verde + 2 revisiones |
+| `develop` | Pipeline verde + 1 revisión   |
 
 **Nunca** hacer push directo a `main` o `develop`.
 
@@ -38,12 +22,12 @@ git checkout -b feature/S2-01-modelo-activity
 
 ### Tipos de rama
 
-| Prefijo | Cuándo usar |
-|---------|------------|
-| `feature/` | Nueva funcionalidad |
-| `fix/` | Corrección de bug |
-| `docs/` | Solo documentación |
-| `test/` | Solo tests |
+| Prefijo     | Cuándo usar                                  |
+| ----------- | -------------------------------------------- |
+| `feature/`  | Nueva funcionalidad                          |
+| `fix/`      | Corrección de bug                            |
+| `docs/`     | Solo documentación                           |
+| `test/`     | Solo tests                                   |
 | `refactor/` | Refactorización sin cambio de comportamiento |
 
 ---
@@ -63,16 +47,16 @@ chore(docker): actualizar imagen nginx a 1.27-alpine
 
 ### Tipos permitidos
 
-| Tipo | Descripción |
-|------|-------------|
-| `feat` | Nueva funcionalidad |
-| `fix` | Corrección de bug |
-| `test` | Tests (añadir/corregir) |
-| `docs` | Documentación |
-| `refactor` | Refactorización |
-| `chore` | Tareas de mantenimiento (deps, config) |
-| `style` | Formato de código (sin cambios lógicos) |
-| `perf` | Optimización de rendimiento |
+| Tipo       | Descripción                             |
+| ---------- | --------------------------------------- |
+| `feat`     | Nueva funcionalidad                     |
+| `fix`      | Corrección de bug                       |
+| `test`     | Tests (añadir/corregir)                 |
+| `docs`     | Documentación                           |
+| `refactor` | Refactorización                         |
+| `chore`    | Tareas de mantenimiento (deps, config)  |
+| `style`    | Formato de código (sin cambios lógicos) |
+| `perf`     | Optimización de rendimiento             |
 
 ---
 
@@ -96,21 +80,25 @@ chore(docker): actualizar imagen nginx a 1.27-alpine
 
 ## Desarrollo local sin Docker
 
-Si prefieres no usar Docker para el backend durante el desarrollo:
+Si prefieres arrancar el frontend fuera de Docker:
 
 ```bash
-# MongoDB debe estar corriendo (Docker o instalación local)
+# Terminal 1 — backend + MongoDB con Docker
+docker-compose up mongodb backend
 
-# Backend
-cd backend
-npm install
-cp ../.env.example .env    # ajustar MONGODB_URI a localhost
-npm run dev                # node --watch, hot reload
-
-# Frontend (en otra terminal)
+# Terminal 2 — frontend fuera de Docker
 cd frontend
 npm install
-npm start                  # ng serve con proxy al backend
+npm start   # ng serve con proxy al backend en localhost:3000
+```
+
+Para arrancar el backend también fuera de Docker:
+
+```bash
+cd backend
+npm install
+cp ../.env.example .env   # ajustar MONGODB_URI a localhost:27018
+npm run dev               # node --watch, hot reload
 ```
 
 ---
@@ -121,17 +109,15 @@ npm start                  # ng serve con proxy al backend
 # Tests unitarios backend (Jest)
 cd backend && npm test
 
-# Tests con cobertura
-cd backend && npm test -- --coverage
-
 # Tests unitarios frontend (Jasmine/Karma)
 cd frontend && npm test
 
-# Tests E2E (Playwright) — requiere los tres servicios levantados
-cd e2e && npx playwright test
+# Tests E2E (Playwright)
+# Requiere frontend en :4200 y backend en :3000
+npx playwright test
 
 # Ver informe E2E
-cd e2e && npx playwright show-report
+npx playwright show-report
 ```
 
 ---
@@ -144,7 +130,12 @@ Una tarea está **terminada** cuando:
 2. ✅ Los commits siguen Conventional Commits
 3. ✅ Los tests unitarios del código nuevo están escritos y pasan
 4. ✅ La cobertura global no ha bajado
-5. ✅ El PR está revisado y aprobado por al menos 1 compañero
-6. ✅ La pipeline de CI está verde
-7. ✅ La documentación relevante está actualizada
-8. ✅ Merged a `develop`
+5. ✅ La pipeline de CI está verde
+6. ✅ La documentación relevante está actualizada
+7. ✅ Merged a `develop`
+
+---
+
+## Equipo
+
+Proyecto desarrollado en el módulo Proyecto del ciclo DAW en el CIFP Avilés.

@@ -7,7 +7,7 @@ consideradas, la decisión tomada y las consecuencias.
 
 ## ADR-001 — Base de datos: MongoDB
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado
 
 ### Contexto
 
@@ -16,11 +16,11 @@ accesibilidad variables) y hacer consultas geoespaciales para filtrar por zona.
 
 ### Alternativas consideradas
 
-| Opción                   | Ventajas                                                  | Desventajas                                                             |
-| ------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **MongoDB**              | Esquema flexible, índice 2dsphere nativo, Mongoose maduro | Menos ACID que SQL, joins costosos                                      |
-| **PostgreSQL + PostGIS** | ACID completo, SQL familiar, PostGIS potente              | Mayor complejidad de setup, ORM menos flexible para esquemas cambiantes |
-| **SQLite**               | Cero configuración                                        | Sin capacidades geoespaciales reales, no escala                         |
+| Opción                   | Ventajas                                                  | Desventajas                                     |
+| ------------------------ | --------------------------------------------------------- | ----------------------------------------------- |
+| **MongoDB**              | Esquema flexible, índice 2dsphere nativo, Mongoose maduro | Menos ACID que SQL, joins costosos              |
+| **PostgreSQL + PostGIS** | ACID completo, SQL familiar, PostGIS potente              | Mayor complejidad de setup, ORM menos flexible  |
+| **SQLite**               | Cero configuración                                        | Sin capacidades geoespaciales reales, no escala |
 
 ### Decisión
 
@@ -28,16 +28,15 @@ MongoDB 7 con Mongoose ODM e índice `2dsphere`.
 
 ### Consecuencias
 
-- Las coordenadas deben guardarse en orden GeoJSON `[lng, lat]`, no `[lat, lng]`.
-- Las consultas fulltext usan el índice `$text` de MongoDB (no tan potente como Elasticsearch, pero suficiente para el
-  MVP).
-- No hay transacciones multi-documento en el MVP (no las necesitamos).
+- Las coordenadas se guardan en orden GeoJSON `[lng, lat]`, no `[lat, lng]`.
+- Las consultas fulltext usan el índice `$text` de MongoDB.
+- No hay transacciones multi-documento en el MVP.
 
 ---
 
 ## ADR-002 — Frontend: Angular 17 con Standalone Components y Signals
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado
 
 ### Contexto
 
@@ -51,52 +50,60 @@ Standalone components + signals para estado local, RxJS solo para streams HTTP. 
 ### Consecuencias positivas
 
 - Menos boilerplate (no hay módulos que mantener).
-- Los signals son el futuro oficial de Angular; mejor alineamiento con la dirección del framework.
-- El estado es más legible: `signal()`, `computed()`, `effect()` son conceptos simples frente a Subject/BehaviorSubject
-  de RxJS.
+- Los signals son el futuro oficial de Angular.
+- El estado es más legible: `signal()`, `computed()`, `effect()`.
 
 ### Consecuencias negativas
 
 - Signals son relativamente nuevos; menos ejemplos en Stack Overflow.
-- Si en el futuro se necesita estado compartido complejo (undo/redo, sincronización multi-pestaña) habrá que añadir NgRx
-  o similar.
+- Si en el futuro se necesita estado complejo habrá que añadir NgRx o similar.
 
 ---
 
-## ADR-003 — Mapa: SVG estático en lugar de Leaflet/Mapbox
+## ADR-003 — Mapa: Leaflet con SVG imageOverlay
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado (revisado — sustituye decisión inicial de SVG estático puro)
 
 ### Contexto
 
-La app necesita mostrar un mapa de Asturias con marcadores de actividades.
+La app necesita mostrar un mapa de Asturias con marcadores de actividades. La decisión inicial era usar un SVG estático
+con marcadores posicionados mediante CSS y transformación lineal. Durante la implementación se detectaron limitaciones:
+sin zoom nativo, sin paneo, y dificultad para posicionar marcadores con precisión en dispositivos con distintas
+resoluciones.
 
 ### Alternativas consideradas
 
-| Opción           | Ventajas                                                    | Desventajas                                                                          |
-| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **SVG estático** | Sin dependencias externas, control total del estilo, ligero | Requiere calibración manual, no es interactivo (zoom, paneo nativo)                  |
-| **Leaflet**      | Open source, tiles de OpenStreetMap, zoom nativo            | Depende de tiles externos (necesita internet), estilos más difíciles de personalizar |
-| **Mapbox GL JS** | Muy potente, bonito                                         | Requiere API key, tiene coste a escala                                               |
-| **Google Maps**  | Familiar, robusto                                           | Coste, dependencia de Google, privacidad                                             |
+| Opción                     | Ventajas                                                          | Desventajas                                                |
+| -------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
+| **SVG estático + CSS**     | Sin dependencias, offline, control total                          | Sin zoom nativo, calibración manual compleja, sin paneo    |
+| **Leaflet + imageOverlay** | Zoom y paneo nativos, coordenadas geográficas reales, open source | Requiere internet para tiles (se desactivan en producción) |
+| **Mapbox GL JS**           | Muy potente, bonito                                               | Requiere API key de pago a escala                          |
+| **Google Maps**            | Familiar, robusto                                                 | Coste, dependencia de Google, privacidad                   |
 
 ### Decisión
 
-SVG estático de Asturias (fuente ArcGIS) con marcadores posicionados mediante CSS.
+**Leaflet 1.9** con el SVG de Asturias (fuente ArcGIS) como `imageOverlay` sobre un mapa base vacío. Los marcadores son
+`L.marker` con `DivIcon` que muestran el icono y color de cada categoría. Las coordenadas geográficas reales se usan
+directamente — no hay transformación lineal.
 
-### Consecuencias
+### Consecuencias positivas
 
-- El SVG necesita calibración con el `posicionador-ciudades.html` si cambia.
-- No hay zoom nativo. Si se necesitara, se podría implementar con CSS `transform: scale()` o panning manual — queda como
-  mejora futura.
-- La app funciona completamente offline (sin tiles externos).
-- El estilo del mapa está 100 % bajo nuestro control (colores, fuentes, etc.).
+- Zoom y paneo nativos sin código adicional.
+- Los marcadores se posicionan usando lat/lng reales — sin calibración manual.
+- El SVG artístico de Asturias se superpone como capa visual manteniendo la identidad del proyecto.
+- Funciona en móvil con gestos táctiles.
+
+### Consecuencias negativas
+
+- Dependencia de Leaflet (~40kb gzip).
+- Los tiles de OpenStreetMap requieren internet (se usan solo para calibración; en producción se eliminan).
+- CommonJS warning en el build de Angular (resuelto con `allowedCommonJsDependencies`).
 
 ---
 
 ## ADR-004 — Autenticación: JWT stateless (sin sesiones en servidor)
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado
 
 ### Contexto
 
@@ -117,20 +124,19 @@ JWT con access token (15 min) + refresh token (7 días). El access token se guar
 ### Consecuencias
 
 - Si se compromete un token, es válido hasta que expire (15 min máximo).
-- No hay logout "real" en el servidor — solo en el cliente.
+- No hay logout real en el servidor — solo en el cliente.
 - `sessionStorage` se vacía al cerrar la pestaña (comportamiento deseado).
-- El refresh token permite sesiones largas sin pedir contraseña cada 15 min.
-- **Mejora futura:** implementar lista negra de refresh tokens en Redis para revocación inmediata.
+- **Mejora futura:** lista negra de refresh tokens en Redis para revocación inmediata.
 
 ---
 
 ## ADR-005 — Soft delete de actividades
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado
 
 ### Contexto
 
-Cuando un admin "elimina" una actividad, ¿qué hacemos con el registro?
+Cuando un admin elimina una actividad, ¿qué hacemos con el registro?
 
 ### Decisión
 
@@ -140,31 +146,34 @@ Soft delete: `active: false`. El registro permanece en la BD.
 
 - Auditoría: podemos saber qué actividades existieron.
 - Recuperación: un admin puede reactivar una actividad.
-- Sin cascadas problemáticas (si hubiera valoraciones u otras relaciones en el futuro).
 
 ### Consecuencias negativas
 
 - Todas las queries públicas deben incluir `{ active: true }`.
-- La BD crece con registros que no se sirven. Para el MVP es irrelevante.
+- La BD crece con registros no servidos (irrelevante para el MVP).
 
 ---
 
 ## ADR-006 — CI/CD: GitHub Actions
 
-**Fecha:** 2025-10 **Estado:** Aceptado
+**Estado:** Aceptado
 
 ### Decisión
 
-GitHub Actions con pipeline: lint → test backend → test frontend → E2E.
+GitHub Actions con pipeline: tests backend (Jest) + build y tests frontend (Jasmine/Karma).
 
 ### Alternativas descartadas
 
 - **GitLab CI:** el repositorio está en GitHub.
-- **Jenkins:** demasiada infraestructura para un proyecto de clase.
+- **Jenkins:** demasiada infraestructura para un proyecto académico.
 - **CircleCI:** gratuito solo con límites, menos integrado con GitHub.
 
 ### Consecuencias
 
-- La pipeline es gratuita para repositorios públicos.
-- Configuración en YAML dentro del propio repositorio (`.github/workflows/ci.yml`).
-- Las ramas `main` y `develop` requieren pipeline verde + 1 revisión para merge.
+- Pipeline gratuita para repositorios públicos.
+- Configuración en `.github/workflows/ci.yml` dentro del repositorio.
+- Las ramas `main` y `develop` requieren pipeline verde para merge.
+
+```
+
+```

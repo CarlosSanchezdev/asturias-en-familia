@@ -12,6 +12,7 @@ Mapa interactivo de actividades familiares en Asturias.
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) ≥ 24
 - [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) ≥ 20 (solo para tests y desarrollo frontend fuera de Docker)
 
 ### 1 — Clonar el repositorio
 
@@ -24,7 +25,7 @@ cd asturias-en-familia
 
 ```bash
 cp .env.example .env
-# Editar .env si se quiere cambiar algún valor (no es necesario para desarrollo)
+# No es necesario modificar nada para desarrollo local
 ```
 
 ### 3 — Arrancar con Docker Compose
@@ -33,8 +34,7 @@ cp .env.example .env
 docker-compose up --build
 ```
 
-La primera vez tarda ~3-5 minutos (descarga imágenes + instala dependencias). Las siguientes arrancadas son casi
-instantáneas.
+La primera vez tarda ~3-5 minutos. Las siguientes arrancadas son casi instantáneas.
 
 ### 4 — Verificar que todo funciona
 
@@ -43,6 +43,50 @@ instantáneas.
 | Frontend (Angular) | http://localhost:4200        | Mapa de Asturias visible                |
 | Backend (API)      | http://localhost:3000/health | `{ "status": "ok", "db": "connected" }` |
 | MongoDB            | localhost:27018              | Conectado desde el backend              |
+
+---
+
+## Ejecutar tests
+
+### Tests unitarios backend (Jest)
+
+> ⚠️ Requiere Docker corriendo (MongoDB en puerto 27018)
+
+```bash
+cd backend
+npm install
+npm test
+```
+
+Cobertura: Statements ≥ 75% · Functions ≥ 80% · Lines ≥ 80%
+
+### Tests unitarios frontend (Jasmine/Karma)
+
+```bash
+cd frontend
+npm install
+npm test
+```
+
+Cobertura: Statements ≥ 96% · Branches ≥ 81% · Functions ≥ 96%
+
+### Tests E2E (Playwright)
+
+> ⚠️ Requiere frontend en http://localhost:4200 y backend en http://localhost:3000
+
+```bash
+# Terminal 1 — backend + MongoDB
+docker-compose up mongodb backend
+
+# Terminal 2 — frontend
+cd frontend && ng serve
+
+# Terminal 3 — tests E2E
+npx playwright test
+
+# Ver informe visual
+npx playwright show-report
+```
 
 ---
 
@@ -55,11 +99,8 @@ docker-compose up
 # Arrancar en segundo plano
 docker-compose up -d
 
-# Ver logs del backend en tiempo real
+# Ver logs del backend
 docker-compose logs -f backend
-
-# Ver logs del frontend
-docker-compose logs -f frontend
 
 # Parar todos los servicios
 docker-compose down
@@ -70,73 +111,56 @@ docker-compose down -v
 # Reconstruir una imagen específica
 docker-compose build backend
 
-# Ejecutar tests del backend dentro del contenedor
-docker-compose exec backend npm test
-
-# Abrir una shell en el contenedor del backend
+# Abrir shell en el contenedor del backend
 docker-compose exec backend sh
 ```
+
+---
 
 ## Seed de datos de desarrollo
 
 ### Categorías
 
-Las 6 categorías se insertan automáticamente al arrancar Docker por primera vez mediante el script
-`backend/scripts/mongo-init.js`.
+Las 6 categorías (Rutas, Acuario, Caballos, Museos, Parques, Playas) se insertan automáticamente al arrancar Docker por
+primera vez mediante `backend/scripts/mongo-init.js`.
 
 ### Actividades de ejemplo
 
-Para insertar las 10 actividades de ejemplo ejecuta (con Docker levantado):
-
 ```bash
+# Con Docker levantado
 docker exec -it aef-backend node scripts/seed-activities.js
 ```
 
-> ⚠️ Ejecutar solo una vez. Si se ejecuta dos veces se duplican los registros. Para limpiar: `docker-compose down -v` y
-> volver a levantar.
+> ⚠️ Ejecutar solo una vez. Para limpiar: `docker-compose down -v`
 
-### Verificar que los datos están cargados
+### Verificar datos cargados
 
 ```bash
-# Categorías (debe devolver 6)
-curl http://localhost:3000/api/categories
-
-# Actividades (debe devolver 10 tras el seed)
-curl http://localhost:3000/api/activities
+curl http://localhost:3000/api/categories  # debe devolver 6
+curl http://localhost:3000/api/activities  # debe devolver 10 tras el seed
 ```
 
 ---
 
 ## Usuario administrador por defecto
 
-Al arrancar por primera vez se crea automáticamente un usuario admin:
+| Campo      | Valor                     |
+| ---------- | ------------------------- |
+| Email      | admin@asturias-familia.es |
+| Contraseña | Admin1234                 |
+| Rol        | admin                     |
 
-| Campo | Valor |
-|---|---|
-| Email | admin@asturias-familia.es |
-| Contraseña | Admin1234 |
-| Rol | admin |
-
-> ⚠️ Cambia la contraseña en producción modificando el hash en backend/scripts/mongo-init.js
-
-Para cambiar el rol de un usuario existente desde MongoDB:
-```bash
-docker exec -it aef-mongodb mongosh asturias-familia --eval "db.users.updateOne({ email: 'tu@email.com' }, { \$set: { role: 'admin' } })"
-```
+> ⚠️ Cambia la contraseña en producción
 
 ---
 
-## Conectar MongoDB Compass al proyecto
-
-La instancia de Docker usa el puerto 27018 para evitar conflictos con MongoDB local.
-Usa esta URI en Compass:
+## Conectar MongoDB Compass
 
 ```
 mongodb://localhost:27018
 ```
 
-> ℹ️ Si tienes MongoDB instalado localmente en Windows ocupa el puerto 27017.
-> El proyecto usa el 27018 para que ambos puedan coexistir.
+> El proyecto usa el puerto 27018 para evitar conflictos con MongoDB local (27017).
 
 ---
 
@@ -144,23 +168,37 @@ mongodb://localhost:27018
 
 ```
 asturias-en-familia/
-├── frontend/          # Angular 17 SPA
-├── backend/           # Node.js 20 + Express 5 API REST
-├── e2e/               # Tests Playwright
-├── docs/              # Documentación técnica
-│   ├── PLAN-IMPLEMENTACION.md
+├── frontend/              # Angular 17 SPA
+│   ├── src/app/
+│   │   ├── core/          # Servicios singleton, interceptors, guards
+│   │   ├── shared/        # Componentes reutilizables
+│   │   └── features/      # map, admin, auth (lazy loaded)
+│   └── coverage/          # Informe de cobertura Karma
+├── backend/               # Node.js 20 + Express 5 API REST
+│   ├── src/
+│   │   ├── models/        # Mongoose: Activity, Category, User
+│   │   ├── routes/        # activities, categories, auth, uploads
+│   │   └── middleware/    # auth, errorHandler, upload
+│   ├── tests/             # Jest: activities, auth, categories, uploads
+│   └── coverage/          # Informe de cobertura Jest
+├── tests/                 # Playwright E2E
+│   ├── admin-flow.spec.ts
+│   └── map-filters.spec.ts
+├── docs/                  # Documentación técnica
+│   ├── ARQUITECTURA.md
 │   ├── LOGICA-NEGOCIO.md
-│   ├── architecture/
-│   │   └── ARQUITECTURA.md
+│   ├── MODELO-DATOS.md
+│   ├── PLAN-IMPLEMENTACION.md
+│   ├── DISENO-UI-UX.md
 │   ├── api/
-│   │   └── openapi.yaml        # Contrato API (Swagger)
+│   │   └── openapi.yaml   # Contrato API (Swagger)
 │   ├── testing/
 │   │   └── CASOS-DE-USO.md
 │   └── adr/
-│       └── ADR.md              # Decisiones de arquitectura
+│       └── ADR.md         # Decisiones de arquitectura
 ├── docker-compose.yml
-├── docker-compose.prod.yml
-├── .env.example
+├── playwright.config.ts
+└── .env.example
 ```
 
 ---
@@ -169,15 +207,16 @@ asturias-en-familia/
 
 | Documento                                             | Descripción                                          |
 | ----------------------------------------------------- | ---------------------------------------------------- |
-| [Arquitectura](docs/architecture/ARQUITECTURA.md)     | Diagrama de componentes, flujos, decisiones técnicas |
+| [Arquitectura](docs/ARQUITECTURA.md)                  | Diagrama de componentes, flujos, decisiones técnicas |
 | [Lógica de negocio](docs/LOGICA-NEGOCIO.md)           | Reglas de validación, roles, soft-delete, mapa       |
-| [Plan de implementación](docs/PLAN-IMPLEMENTACION.md) | Sprints, tareas, hitos de entrega                    |
-| [Contrato API](docs/api/openapi.yaml)                 | OpenAPI 3.0 — todos los endpoints documentados       |
-| [Casos de uso](docs/testing/CASOS-DE-USO.md)          | CUs con criterios de aceptación y tests asociados    |
-| [ADR](docs/adr/ADR.md)                                | Por qué elegimos cada tecnología                     |
+| [Modelo de datos](docs/MODELO-DATOS.md)               | Colecciones, índices, validaciones                   |
+| [Plan de implementación](docs/PLAN-IMPLEMENTACION.md) | Sprints, tareas, hitos                               |
+| [Diseño UI/UX](docs/DISENO-UI-UX.md)                  | Paleta, tipografía, componentes, accesibilidad       |
+| [Contrato API](docs/api/openapi.yaml)                 | OpenAPI 3.0 — todos los endpoints                    |
+| [Casos de uso](docs/testing/CASOS-DE-USO.md)          | CUs con criterios de aceptación y tests              |
+| [ADR](docs/adr/ADR.md)                                | Decisiones de arquitectura                           |
 
-Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
-[editor.swagger.io](https://editor.swagger.io).
+Para ver el contrato API visualmente → [editor.swagger.io](https://editor.swagger.io)
 
 ---
 
@@ -188,8 +227,8 @@ Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 | Frontend      | Angular 17, TypeScript, SCSS, Signals |
 | Backend       | Node.js 20, Express 5, Mongoose       |
 | Base de datos | MongoDB 7 (índice 2dsphere)           |
-| Mapa          | Leaflet 1.9 + SVG imageOverlay        | Zoom nativo, coordenadas geográficas reales |
-| Testing       | Jest, Jasmine/Karma, Playwright       |
+| Mapa          | Leaflet 1.9 + SVG imageOverlay        |
+| Testing       | Jest · Jasmine/Karma · Playwright     |
 | CI/CD         | GitHub Actions                        |
 | Contenedores  | Docker + Docker Compose               |
 
@@ -197,24 +236,20 @@ Para ver el contrato API de forma visual, pega el contenido de `openapi.yaml` en
 
 ## Posibles ampliaciones futuras
 
-- Separación del detalle de actividad en colección independiente `ActivityDetail`
-  para optimizar la carga del mapa (solo datos mínimos) y permitir contenido
-  enriquecido (galería de fotos, horarios, tarifas detalladas) sin afectar
-  al rendimiento del listado principal.
-- Navegación jerárquica del mapa a 3 niveles (Asturias → Zona → Concejo)
-  requiere añadir IDs por municipio al SVG actual. El SVG disponible (ArcGIS)
-  no tiene paths identificados por concejo. Implementación futura cuando se
-  disponga de un SVG con esa estructura.
+- Despliegue en hosting público (Vercel + Railway + MongoDB Atlas)
+- Integración con APIs de turismo del Principado de Asturias
+- Sistema de valoraciones y comentarios de usuarios
+- Navegación jerárquica del mapa por concejo
+- Soporte multiidioma con Angular i18n
 
 ---
 
 ## Contribuir
 
-Ver [CONTRIBUTING.md](CONTRIBUTING.md) para el flujo de ramas, commits y cómo pasar la pipeline de CI antes de hacer un
-PR.
+Ver [CONTRIBUTING.md](CONTRIBUTING.md) para el flujo de ramas, commits y pipeline de CI.
 
 ---
 
 ## Equipo
 
-Proyecto desarrollado en el módulo Proyecto del ciclo DAW en el Cifp Aviles.
+Proyecto desarrollado en el módulo Proyecto Intermodular II del ciclo DAW en el CIFP Avilés.
