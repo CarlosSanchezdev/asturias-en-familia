@@ -23,8 +23,8 @@ asociado.
 
 1. El visitante abre la URL raíz (`/`)
 2. El sistema carga todas las actividades activas
-3. El sistema renderiza el mapa SVG de Asturias
-4. El sistema posiciona un marcador por cada actividad en sus coordenadas
+3. El sistema renderiza el mapa Leaflet con el SVG de Asturias como capa base
+4. El sistema posiciona un marcador (`L.marker`) por cada actividad en sus coordenadas geográficas reales
 5. El visitante ve el mapa con los marcadores
 
 ### Flujo alternativo A — Sin actividades
@@ -186,9 +186,9 @@ asociado.
 4. Pulsa "Guardar"
 5. El sistema valida los campos en el cliente
 6. El sistema envía `POST /api/activities` con JWT en cabecera
-7. El backend valida, calcula `mapLeft`/`mapTop` y guarda en MongoDB
+7. El backend valida los campos, ejecuta el hook pre-save (calcula `mapLeft`/`mapTop` como legacy) y guarda en MongoDB
 8. El sistema redirige al mapa y recarga las actividades
-9. El nuevo marcador aparece en el mapa
+9. El nuevo marcador aparece en el mapa en las coordenadas correctas
 
 ### Flujo alternativo A — Validación en cliente falla
 
@@ -303,4 +303,3 @@ asociado.
 | CU-07 Editar actividad     |       —       |  ✅  |     —      |
 | CU-08 Desactivar           |       —       |  ✅  |     ✅     |
 | CU-09 Acceso no autorizado |      ✅       |  ✅  |     ✅     |
-| CU-10 Registro             |       —       |  ✅  |     —      |

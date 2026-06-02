@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
     title: Asturias en Familia — API REST
     description: |
-        API REST del proyecto Intermodular II · DAW · Cifp Aviles · 2025-2026.
+        API REST del proyecto Intermodular II · DAW · CIFP Avilés · 2025-2026.
         Proporciona acceso a actividades familiares geolocalizadas en Asturias.
     version: 1.0.0
 
@@ -18,8 +18,9 @@ tags:
       description: Categorías de actividades
     - name: auth
       description: Autenticación y gestión de sesión
+    - name: uploads
+      description: Subida de archivos
 
-# ─── Componentes reutilizables ──────────────────────────────
 components:
     securitySchemes:
         bearerAuth:
@@ -28,7 +29,6 @@ components:
             bearerFormat: JWT
 
     schemas:
-        # ── Paginación ──────────────────────────────────────────
         Pagination:
             type: object
             properties:
@@ -45,7 +45,6 @@ components:
                     type: integer
                     example: 3
 
-        # ── Categoría ───────────────────────────────────────────
         Category:
             type: object
             properties:
@@ -99,8 +98,10 @@ components:
                 order:
                     type: integer
                     minimum: 0
+                active:
+                    type: boolean
+                    default: true
 
-        # ── Actividad ───────────────────────────────────────────
         Activity:
             type: object
             properties:
@@ -110,9 +111,12 @@ components:
                 name:
                     type: string
                     example: "Ruta del Oso — Picos de Europa"
+                shortDescription:
+                    type: string
+                    example: "Ruta circular de dificultad baja."
                 description:
                     type: string
-                    example: "Ruta circular de dificultad baja ideal para familias con niños mayores de 6 años."
+                    example: "Ruta circular ideal para familias con niños mayores de 6 años."
                 category:
                     $ref: "#/components/schemas/Category"
                 location:
@@ -144,26 +148,40 @@ components:
                 accessible:
                     type: boolean
                     example: false
-                price:
-                    type: number
-                    minimum: 0
-                    example: 0
-                isFree:
+                priceText:
+                    type: string
+                    description: "Texto descriptivo del precio (ej: '12,50 € adulto / 8 € niño')"
+                    example: "12,50 € adulto"
+                free:
                     type: boolean
-                    description: "Virtual — true si price === 0"
                     example: true
                 languages:
                     type: array
                     items:
                         type: string
                     example: ["es", "en"]
+                website:
+                    type: string
+                    example: "https://example.com"
+                phone:
+                    type: string
+                    example: "+34 985 000 000"
+                address:
+                    type: string
+                    example: "Calle Mayor 1, Cangas de Onís"
+                schedule:
+                    type: string
+                    example: "Lunes a viernes 9:00-18:00"
+                tips:
+                    type: string
+                    example: "Llevar calzado de montaña"
                 mapLeft:
                     type: number
-                    description: "% left calculado para posicionar en el SVG"
+                    description: "% left para posicionar en el mapa (calculado automáticamente)"
                     example: 72.34
                 mapTop:
                     type: number
-                    description: "% top calculado para posicionar en el SVG"
+                    description: "% top para posicionar en el mapa (calculado automáticamente)"
                     example: 28.91
                 active:
                     type: boolean
@@ -183,6 +201,9 @@ components:
                     type: string
                     maxLength: 100
                     example: "Ruta del Oso"
+                shortDescription:
+                    type: string
+                    maxLength: 300
                 description:
                     type: string
                     maxLength: 2000
@@ -214,17 +235,28 @@ components:
                 accessible:
                     type: boolean
                     default: false
-                price:
-                    type: number
-                    minimum: 0
-                    default: 0
+                priceText:
+                    type: string
+                    maxLength: 200
+                free:
+                    type: boolean
+                    default: false
                 languages:
                     type: array
                     items:
                         type: string
                     default: ["es"]
+                website:
+                    type: string
+                phone:
+                    type: string
+                address:
+                    type: string
+                schedule:
+                    type: string
+                tips:
+                    type: string
 
-        # ── Usuario ─────────────────────────────────────────────
         User:
             type: object
             properties:
@@ -254,7 +286,6 @@ components:
                 user:
                     $ref: "#/components/schemas/User"
 
-        # ── Errores ─────────────────────────────────────────────
         Error:
             type: object
             properties:
@@ -278,9 +309,43 @@ components:
                             message:
                                 type: string
 
-# ─── Endpoints ──────────────────────────────────────────────
+        UploadResponse:
+            type: object
+            properties:
+                filename:
+                    type: string
+                    example: "icon-rutas-1234567890.svg"
+                url:
+                    type: string
+                    example: "/uploads/icons/icon-rutas-1234567890.svg"
+
+    responses:
+        BadRequest:
+            description: Datos de entrada inválidos
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/ValidationError"
+        Unauthorized:
+            description: Token no proporcionado o inválido
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        Forbidden:
+            description: Sin permisos suficientes
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        NotFound:
+            description: Recurso no encontrado
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+
 paths:
-    # ── Health ─────────────────────────────────────────────────
     /health:
         get:
             summary: Estado del servidor
@@ -303,11 +368,10 @@ paths:
                                         type: string
                                         enum: [connected, disconnected]
 
-    # ── Actividades ────────────────────────────────────────────
     /api/activities:
         get:
             tags: [actividades]
-            summary: Listar actividades
+            summary: Listar actividades activas
             operationId: getActivities
             parameters:
                 - name: zone
@@ -315,17 +379,11 @@ paths:
                   schema:
                       type: string
                       enum: [oriente, centro, occidente]
-                  description: Filtrar por zona geográfica
                 - name: category
                   in: query
                   schema:
                       type: string
                   description: ObjectId de la categoría
-                - name: accessible
-                  in: query
-                  schema:
-                      type: boolean
-                  description: Solo actividades accesibles
                 - name: free
                   in: query
                   schema:
@@ -364,12 +422,6 @@ paths:
                                             $ref: "#/components/schemas/Activity"
                                     pagination:
                                         $ref: "#/components/schemas/Pagination"
-                "400":
-                    description: Parámetros de filtro inválidos
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ValidationError"
 
         post:
             tags: [actividades]
@@ -383,17 +435,6 @@ paths:
                     application/json:
                         schema:
                             $ref: "#/components/schemas/ActivityInput"
-                        example:
-                            name: "Acuario de Gijón"
-                            description: "El mayor acuario del norte de España."
-                            category: "664a1b2c3d4e5f6a7b8c9d0e"
-                            location:
-                                coordinates: [-5.6618, 43.5454]
-                            zone: "centro"
-                            municipality: "Gijón"
-                            price: 12.5
-                            accessible: true
-                            languages: ["es", "en"]
             responses:
                 "201":
                     description: Actividad creada
@@ -402,23 +443,11 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Activity"
                 "400":
-                    description: Datos inválidos
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ValidationError"
+                    $ref: "#/components/responses/BadRequest"
                 "401":
-                    description: Token no proporcionado o inválido
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/Unauthorized"
                 "403":
-                    description: Se requiere rol admin
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/Forbidden"
 
     /api/activities/{id}:
         parameters:
@@ -441,17 +470,9 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Activity"
                 "400":
-                    description: ID con formato inválido
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/BadRequest"
                 "404":
-                    description: Actividad no encontrada
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/NotFound"
 
         put:
             tags: [actividades]
@@ -502,12 +523,17 @@ paths:
                 "404":
                     $ref: "#/components/responses/NotFound"
 
-    # ── Categorías ─────────────────────────────────────────────
     /api/categories:
         get:
             tags: [categorías]
-            summary: Listar categorías activas
+            summary: Listar categorías
             operationId: getCategories
+            parameters:
+                - name: all
+                  in: query
+                  schema:
+                      type: boolean
+                  description: Si es true devuelve también las inactivas (solo admin)
             responses:
                 "200":
                     description: Lista de categorías ordenadas
@@ -548,7 +574,60 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
 
-    # ── Auth ───────────────────────────────────────────────────
+    /api/categories/{id}:
+        parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                  type: string
+              description: ObjectId de la categoría
+
+        get:
+            tags: [categorías]
+            summary: Obtener categoría por ID
+            operationId: getCategoryById
+            responses:
+                "200":
+                    description: Categoría encontrada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Category"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+
+        put:
+            tags: [categorías]
+            summary: Actualizar categoría
+            operationId: updateCategory
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CategoryInput"
+            responses:
+                "200":
+                    description: Categoría actualizada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Category"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+                "404":
+                    $ref: "#/components/responses/NotFound"
+                "409":
+                    description: No se puede desactivar — hay actividades activas con esta categoría
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+
     /api/auth/register:
         post:
             tags: [auth]
@@ -651,29 +730,72 @@ paths:
                 "401":
                     $ref: "#/components/responses/Unauthorized"
 
-    # ── Respuestas reutilizables ────────────────────────────────
-    responses:
-        BadRequest:
-            description: Datos de entrada inválidos
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/ValidationError"
-        Unauthorized:
-            description: Token no proporcionado o inválido
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
-        Forbidden:
-            description: Sin permisos suficientes
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
-        NotFound:
-            description: Recurso no encontrado
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
+    /api/uploads/icon:
+        post:
+            tags: [uploads]
+            summary: Subir icono de categoría
+            operationId: uploadIcon
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                icon:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: Icono subido correctamente
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UploadResponse"
+                "400":
+                    description: No se subió ningún archivo
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
+
+    /api/uploads/activity-image:
+        post:
+            tags: [uploads]
+            summary: Subir imagen de actividad
+            operationId: uploadActivityImage
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                image:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: Imagen subida correctamente
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UploadResponse"
+                "400":
+                    description: No se subió ningún archivo
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "403":
+                    $ref: "#/components/responses/Forbidden"
