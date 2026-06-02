@@ -4,38 +4,35 @@ import app from '../src/server.js';
 import User from '../src/models/User.js';
 import Category from '../src/models/Category.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/asturias-test';
-
 let adminToken = '';
 let categoryId = '';
 let activityId = '';
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test');
+  await mongoose.connect(
+    process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test'
+  );
 
-  // Crear admin de test si no existe
-  const exists = await User.findOne({ email: 'admin@asturias-familia.es' });
-  if (!exists) {
-    const passwordHash = await User.hashPassword('Admin1234');
-    await User.create({
-      email: 'admin@asturias-familia.es',
-      passwordHash,
-      role: 'admin'
-    });
-  }
+  const passwordHash = await User.hashPassword('Admin1234');
+  await User.findOneAndUpdate(
+    { email: 'admin@asturias-familia.es' },
+    { $setOnInsert: { passwordHash, role: 'admin', active: true } },
+    { upsert: true, new: true }
+  );
 
-  // Crear categoría de test si no existe
-  let cat = await Category.findOne({ slug: 'test-cat' });
+  let cat = await Category.findOne({ slug: 'test-fixture-cat' });
   if (!cat) {
     cat = await Category.create({
-      name: 'Test', slug: 'test-cat',
-      icon: 'test.svg', color: '#000000',
-      order: 99, active: true
+      name: 'Test Fixture',
+      slug: 'test-fixture-cat',
+      icon: 'test.svg',
+      color: '#FF0000',
+      order: 99,
+      active: true
     });
   }
   categoryId = cat._id.toString();
 
-  // Login
   const loginRes = await request(app)
     .post('/api/auth/login')
     .send({ email: 'admin@asturias-familia.es', password: 'Admin1234' });

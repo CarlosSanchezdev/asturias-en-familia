@@ -2,19 +2,21 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../src/server.js';
 import User from '../src/models/User.js';
-import Category from '../src/models/Category.js';
 
 let adminToken = '';
 let categoryId = '';
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test');
+  await mongoose.connect(
+    process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test'
+  );
 
-  const exists = await User.findOne({ email: 'admin@asturias-familia.es' });
-  if (!exists) {
-    const passwordHash = await User.hashPassword('Admin1234');
-    await User.create({ email: 'admin@asturias-familia.es', passwordHash, role: 'admin' });
-  }
+  const passwordHash = await User.hashPassword('Admin1234');
+  await User.findOneAndUpdate(
+    { email: 'admin@asturias-familia.es' },
+    { $setOnInsert: { passwordHash, role: 'admin', active: true } },
+    { upsert: true, new: true }
+  );
 
   const loginRes = await request(app)
     .post('/api/auth/login')
