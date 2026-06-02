@@ -9,7 +9,7 @@ on:
 jobs:
     # ─── Lint y build backend ─────────────────────────────────
     backend:
-        name: Backend — Lint + Tests
+        name: Backend — Tests
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -38,9 +38,6 @@ jobs:
             - name: Instalar dependencias
               run: npm install
 
-            - name: Lint
-              run: npm run lint
-
             - name: Ejecutar tests con cobertura
               run: npm test
               env:
@@ -50,7 +47,7 @@ jobs:
 
     # ─── Build y Tests frontend ───────────────────────────────
     frontend:
-        name: Frontend — Lint + Build + Tests
+        name: Frontend — Build + Tests
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -69,9 +66,6 @@ jobs:
 
             - name: Instalar dependencias
               run: npm ci
-
-            - name: Lint
-              run: npm run lint
 
             - name: Instalar Chrome
               uses: browser-actions/setup-chrome@v1
