@@ -1,23 +1,22 @@
 # Plan de Implementación — Asturias en Familia
 
-**Proyecto:** Intermodular II · DAW · CIFP Avilés · Curso 2025-2026 **Duración total:** 8 semanas (sprints de 1 semana)
-**Metodología:** Scrum simplificado — daily breve, revisión y retrospectiva semanal
+**Proyecto:** Intermodular II · DAW · CIFP Avilés · Curso 2025-2026 **Duración total:** 8 sprints
 
 ---
 
 ## Visión general de fases
 
 ```
-Semana 1-2  │ FASE 0 — Infraestructura y base
-Semana 3-4  │ FASE 1 — Backend: API REST completa
-Semana 5-6  │ FASE 2 — Frontend: Mapa y visualización
-Semana 7    │ FASE 3 — Panel admin y autenticación
-Semana 8    │ FASE 4 — QA, pulido y entrega
+Sprint 1-2  │ FASE 0 — Infraestructura y base
+Sprint 3-4  │ FASE 1 — Backend: API REST completa
+Sprint 5-6  │ FASE 2 — Frontend: Mapa y visualización
+Sprint 7    │ FASE 3 — Panel admin y autenticación
+Sprint 8    │ FASE 4 — QA, pulido y entrega
 ```
 
 ---
 
-## Sprint 1 — Infraestructura base (Semana 1)
+## Sprint 1 — Infraestructura base (Sprint 1)
 
 **Objetivo:** El entorno local funciona con `docker-compose up`. Todo el equipo puede arrancar la app sin errores.
 
@@ -43,7 +42,7 @@ Semana 8    │ FASE 4 — QA, pulido y entrega
 
 ---
 
-## Sprint 2 — Modelos y API: Actividades y Categorías (Semana 2)
+## Sprint 2 — Modelos y API: Actividades y Categorías (Sprint 2)
 
 **Objetivo:** El backend expone los endpoints de actividades y categorías. Los datos se persisten correctamente en
 MongoDB.
@@ -72,7 +71,7 @@ MongoDB.
 
 ---
 
-## Sprint 3 — Autenticación JWT (Semana 3)
+## Sprint 3 — Autenticación JWT (Sprint 3)
 
 **Objetivo:** Registro, login y protección de rutas admin funcionan.
 
@@ -99,7 +98,7 @@ MongoDB.
 
 ---
 
-## Sprint 4 — API admin: POST/PUT/DELETE (Semana 4)
+## Sprint 4 — API admin: POST/PUT/DELETE (Sprint 4)
 
 **Objetivo:** El CRUD completo de actividades y categorías funciona desde la API.
 
@@ -124,7 +123,7 @@ MongoDB.
 
 ---
 
-## Sprint 5 — Frontend: Mapa SVG y marcadores (Semana 5)
+## Sprint 5 — Frontend: Mapa SVG y marcadores (Sprint 5)
 
 **Objetivo:** El mapa de Asturias muestra los marcadores de actividades. Al hacer clic en un marcador aparece el
 detalle.
@@ -152,7 +151,7 @@ detalle.
 
 ---
 
-## Sprint 6 — Frontend: Filtros y búsqueda (Semana 6)
+## Sprint 6 — Frontend: Filtros y búsqueda (Sprint 6)
 
 **Objetivo:** El usuario puede filtrar actividades por zona, categoría, accesibilidad y precio. La URL refleja los
 filtros activos (deep-linking).
@@ -179,7 +178,7 @@ filtros activos (deep-linking).
 
 ---
 
-## Sprint 7 — Panel de administración (Semana 7)
+## Sprint 7 — Panel de administración (Sprint 7)
 
 **Objetivo:** Un admin puede crear, editar y desactivar actividades desde la UI.
 
@@ -207,7 +206,7 @@ filtros activos (deep-linking).
 
 ---
 
-## Sprint 8 — QA, accesibilidad y entrega (Semana 8)
+## Sprint 8 — QA, accesibilidad y entrega (Sprint 8)
 
 **Objetivo:** La aplicación cumple WCAG 2.1 AA, la documentación está completa y el proyecto puede evaluarse y
 presentarse.
@@ -238,7 +237,7 @@ presentarse.
 
 ## Resumen de hitos
 
-| Hito  | Semana | Descripción                     |
+| Hito  | Sprint | Descripción                     |
 | ----- | ------ | ------------------------------- |
 | 🏗️ M1 | Fin S1 | Entorno Docker funcional        |
 | 🔌 M2 | Fin S2 | API de lectura completa         |
@@ -252,9 +251,6 @@ presentarse.
 ---
 
 ## Gestión del trabajo
-
-**Herramienta:** GitHub Projects (tablero Kanban) **Columnas:** Backlog → En progreso → En revisión → Hecho
-**Reuniones:** Daily de 10 min · Revisión semanal viernes
 
 **Convenciones de ramas:**
 
