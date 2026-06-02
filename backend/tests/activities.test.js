@@ -7,7 +7,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/asturi
 // Conectar antes de todos los tests
 beforeAll(async () => {
   await mongoose.connect(MONGODB_URI);
-}, 15000);
+}, 30000);
 
 // Desconectar después de todos los tests
 afterAll(async () => {

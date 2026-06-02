@@ -9,7 +9,7 @@ on:
 jobs:
     # ─── Lint y build backend ─────────────────────────────────
     backend:
-        name: Backend — Lint + Tests
+        name: Backend — Tests
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -45,9 +45,9 @@ jobs:
                   JWT_SECRET: test-secret-para-ci
                   MONGODB_URI: mongodb://localhost:27017/test
 
-    # ─── Build frontend ───────────────────────────────────────
+    # ─── Build y Tests frontend ───────────────────────────────
     frontend:
-        name: Frontend — Build
+        name: Frontend — Build + Tests
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -67,6 +67,11 @@ jobs:
             - name: Instalar dependencias
               run: npm ci
 
+            - name: Instalar Chrome
+              uses: browser-actions/setup-chrome@v1
+
+            - name: Ejecutar tests con cobertura
+              run: npm test -- --browsers=ChromeHeadless --watch=false
+
             - name: Build de producción
               run: npm run build:prod
-
