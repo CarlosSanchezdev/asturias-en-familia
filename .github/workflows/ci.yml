@@ -38,6 +38,9 @@ jobs:
             - name: Instalar dependencias
               run: npm install
 
+            - name: Lint
+              run: npm run lint
+
             - name: Ejecutar tests con cobertura
               run: npm test
               env:
@@ -47,7 +50,7 @@ jobs:
 
     # ─── Build y Tests frontend ───────────────────────────────
     frontend:
-        name: Frontend — Build + Tests
+        name: Frontend — Lint + Build + Tests
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -66,6 +69,9 @@ jobs:
 
             - name: Instalar dependencias
               run: npm ci
+
+            - name: Lint
+              run: npm run lint
 
             - name: Instalar Chrome
               uses: browser-actions/setup-chrome@v1
