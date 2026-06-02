@@ -8,7 +8,7 @@ let adminToken = '';
 let categoryId = '';
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27018/asturias-test');
+  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test');
 
   const exists = await User.findOne({ email: 'admin@asturias-familia.es' });
   if (!exists) {

@@ -11,7 +11,7 @@ let categoryId = '';
 let activityId = '';
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27018/asturias-test');
+  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/asturias-test');
 
   // Crear admin de test si no existe
   const exists = await User.findOne({ email: 'admin@asturias-familia.es' });
