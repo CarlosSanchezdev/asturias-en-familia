@@ -9,6 +9,7 @@ import {
 	ElementRef,
 	AfterViewInit,
 	OnChanges,
+	OnInit,
 	SimpleChanges,
 } from "@angular/core";
 import { Category } from "../../../../core/services/activities.service";
@@ -21,9 +22,14 @@ import { CategoriesService } from "../../../../core/services/categories.service"
 	templateUrl: "./filter-panel.component.html",
 	styleUrl: "./filter-panel.component.scss",
 })
-export class FilterPanelComponent implements AfterViewInit, OnChanges {
+export class FilterPanelComponent implements AfterViewInit, OnChanges, OnInit {
 	@Input() categories: Category[] = [];
 	@Input() resultCount = 0;
+	@Input() initialCategories: string[] = [];
+	@Input() initialFree = false;
+	@Input() initialZone = "";
+	@Input() initialAccessible = false;
+	@Input() resetSignal = 0;
 
 	@Output() categoriesChange = new EventEmitter<string[]>();
 	@Output() freeChange = new EventEmitter<boolean>();
@@ -42,11 +48,21 @@ export class FilterPanelComponent implements AfterViewInit, OnChanges {
 	readonly canScrollRight = signal(false);
 	readonly drawerOpen = signal(false);
 
+	ngOnInit(): void {
+		if (this.initialCategories.length) this.activeCategories.set(this.initialCategories);
+		if (this.initialFree) this.onlyFree.set(true);
+		if (this.initialZone) this.activeZone.set(this.initialZone);
+		if (this.initialAccessible) this.onlyAccessible.set(true);
+	}
+
 	ngAfterViewInit(): void {
 		setTimeout(() => this.updateScrollButtons(), 0);
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
+		if (changes["resetSignal"] && !changes["resetSignal"].firstChange) {
+			this.clearFilters();
+		}
 		if (changes["categories"]) {
 			setTimeout(() => this.updateScrollButtons(), 0);
 		}

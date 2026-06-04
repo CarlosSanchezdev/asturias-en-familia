@@ -1,4 +1,5 @@
 import { Component, OnDestroy, AfterViewInit, inject, effect, signal, computed } from "@angular/core";
+import { Router, ActivatedRoute } from "@angular/router";
 import { ActivitiesService, Activity } from "../../core/services/activities.service";
 import { CategoriesService } from "../../core/services/categories.service";
 import { ActivityPopupComponent } from "./components/activity-popup/activity-popup.component";
@@ -6,6 +7,68 @@ import { FilterPanelComponent } from "./components/filter-panel/filter-panel.com
 import { MapHeaderComponent } from "./components/map-header/map-header.component";
 import * as L from "leaflet";
 
+interface ScreenConfig {
+	maxSize: number;
+	zoomBounds: L.LatLngBoundsExpression;
+	dragBounds: L.LatLngBoundsExpression;
+	initialZoom: number;
+	initialCenter: L.LatLngExpression; // 🔥 Nueva propiedad para controlar la altura inicial
+}
+
+const SCREEN_CONFIGS: ScreenConfig[] = [
+	{
+		maxSize: 767, // 📱 MOBILE
+		zoomBounds: [
+			[42.2, -7.2],
+			[43.9, -4.5],
+		],
+		dragBounds: [
+			[42.2, -7.2],
+			[43.9, -4.5],
+		],
+		initialZoom: 7,
+		initialCenter: [43.55, -5.85],
+	},
+	{
+		maxSize: 1199, // 	TABLET
+		zoomBounds: [
+			[42.2, -7.4],
+			[43.9, -4.3],
+		],
+		dragBounds: [
+			[42.2, -7.4],
+			[43.9, -4.3],
+		],
+		initialZoom: 8.5,
+		initialCenter: [43.36, -5.85],
+	},
+	{
+		maxSize: 2600,
+		zoomBounds: [
+			[42.6, -7.7],
+			[44.05, -4.0],
+		],
+		dragBounds: [
+			[42.75, -7.64],
+			[43.85, -4.04],
+		],
+		initialZoom: 9.5,
+		initialCenter: [43.68, -5.85], // El centro que te gusta
+	},
+	{
+		maxSize: Infinity, // 🖥️ PANTALLAS GIGANTES
+		zoomBounds: [
+			[41.5, -7.9],
+			[44.3, -3.9],
+		],
+		dragBounds: [
+			[41.5, -7.9],
+			[44.3, -3.9],
+		],
+		initialZoom: 8.5,
+		initialCenter: [43.36, -5.85],
+	},
+];
 @Component({
 	selector: "aef-map",
 	standalone: true,
@@ -16,6 +79,8 @@ import * as L from "leaflet";
 export class MapComponent implements AfterViewInit, OnDestroy {
 	readonly activitiesService = inject(ActivitiesService);
 	private readonly categoriesService = inject(CategoriesService);
+	private readonly router = inject(Router);
+	private readonly route = inject(ActivatedRoute);
 	private map!: L.Map;
 	private markersLayer = L.layerGroup();
 
@@ -24,6 +89,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 	readonly activeZone = signal<string>("");
 	readonly onlyAccessible = signal(false);
 	readonly searchText = signal("");
+	readonly resetSignal = signal(0);
+
+	// Valores iniciales leídos de la URL (se asignan en el constructor)
+	initialCats: string[] = [];
+	initialFree = false;
+	initialZone = "";
+	initialAccessible = false;
+	initialSearch = "";
 
 	readonly filteredActivities = computed(() => {
 		let result = this.activitiesService.activities();
@@ -31,8 +104,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 		const cats = this.activeCategories();
 		if (cats.length > 0) {
 			result = result.filter(a => {
-				const catId = typeof a.category === "object" ? a.category._id : (a.category as string);
-				return cats.includes(catId);
+				const catSlug = typeof a.category === "object" ? a.category.slug : (a.category as string);
+				return cats.includes(catSlug);
 			});
 		}
 
@@ -60,11 +133,55 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 	readonly resultCount = computed(() => this.filteredActivities().length);
 
 	constructor() {
+		const params = this.route.snapshot.queryParams;
+
+		if (params['category']) {
+			const cats = (params['category'] as string).split(',').filter(Boolean);
+			this.activeCategories.set(cats);
+			this.initialCats = cats;
+		}
+		if (params['free'] === 'true') {
+			this.onlyFree.set(true);
+			this.initialFree = true;
+		}
+		if (params['zone']) {
+			this.activeZone.set(params['zone']);
+			this.initialZone = params['zone'];
+		}
+		if (params['accessible'] === 'true') {
+			this.onlyAccessible.set(true);
+			this.initialAccessible = true;
+		}
+		if (params['q']) {
+			this.searchText.set(params['q']);
+			this.initialSearch = params['q'];
+		}
+
 		effect(() => {
 			const activities = this.filteredActivities();
 			if (this.map) {
 				this.renderMarkers(activities);
 			}
+		});
+
+		effect(() => {
+			const cats = this.activeCategories();
+			const free = this.onlyFree();
+			const zone = this.activeZone();
+			const accessible = this.onlyAccessible();
+			const q = this.searchText();
+
+			this.router.navigate([], {
+				relativeTo: this.route,
+				queryParams: {
+					category: cats.length ? cats.join(',') : null,
+					free: free || null,
+					zone: zone || null,
+					accessible: accessible || null,
+					q: q || null,
+				},
+				replaceUrl: true,
+			});
 		});
 	}
 
@@ -74,10 +191,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 		this.activitiesService.loadCategories();
 	}
 
+	getCurrentScreenConfig(): ScreenConfig {
+		const longestSide = Math.max(window.innerWidth, window.innerHeight);
+
+		// Busca la primera regla que sea mayor o igual al tamaño de nuestra pantalla
+		return SCREEN_CONFIGS.find(config => longestSide <= config.maxSize)!;
+	}
+
 	private initMap(): void {
 		const mapBounds: L.LatLngBoundsExpression = [
-			[42.8, -7.5],
-			[43.8, -4.2],
+			[42.2, -7.3],
+			[43.9, -4.5],
 		];
 
 		// Bounds del SVG — solo para calibrar el overlay
@@ -86,39 +210,49 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 			[43.85, -4.04],
 		];
 
-		const isMobile = window.innerWidth < 768;
-		const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-		const isLargeTablet = window.innerWidth >= 1024 && window.innerWidth <= 1440;
-		const initialZoom = isMobile ? 8 : isTablet ? 9 : isLargeTablet ? 9 : 10;
+		// Obtenemos la configuración exacta para la pantalla actual
+		const screenConfig = this.getCurrentScreenConfig();
 
 		this.map = L.map("map", {
-			center: [43.36, -5.85],
-			zoom: initialZoom,
-			minZoom: isMobile ? 7 : 8,
-			maxZoom: 12,
-			maxBounds: mapBounds, // ← usa mapBounds aquí
+			center: screenConfig.initialCenter,
+			zoom: screenConfig.initialZoom,
+			maxBounds: screenConfig.dragBounds,
 			maxBoundsViscosity: 1.0,
+			maxZoom: 12,
 			zoomControl: false,
 			wheelPxPerZoomLevel: 120,
 			zoomSnap: 0.5,
 			zoomDelta: 0.5,
 		});
 
+		// Forzamos límites de zoom dinámicos contra los bordes blancos
+		const perfectMinZoom = this.map.getBoundsZoom(screenConfig.zoomBounds, true);
+		this.map.setMinZoom(perfectMinZoom);
+
+		// Evento Resize completamente plano
 		window.addEventListener("resize", () => {
-			const newMobile = window.innerWidth < 768;
-			if (newMobile) {
-				this.map.setZoom(8.5);
+			this.map.invalidateSize();
+
+			const newConfig = this.getCurrentScreenConfig();
+
+			// Actualizamos el muro de arrastre
+			this.map.setMaxBounds(newConfig.dragBounds);
+
+			// Actualizamos el cálculo del zoom con la caja de zoom
+			const newMinZoom = this.map.getBoundsZoom(newConfig.zoomBounds, true);
+			this.map.setMinZoom(newMinZoom);
+
+			if (this.map.getZoom() < newMinZoom) {
+				this.map.setZoom(newMinZoom);
 			}
 		});
 
+		// Controles y capas finales
 		L.control.zoom({ position: "bottomright" }).addTo(this.map);
-
-		L.imageOverlay("assets/maps/asturias_municipal.svg", svgBounds, {}).addTo(this.map); // ← usa svgBounds aquí
-
-		L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-			attribution: "© OpenStreetMap",
-		}).addTo(this.map);
-
+		L.imageOverlay("assets/maps/asturias_municipal.svg", svgBounds, {}).addTo(this.map);
+		// L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+		// 	attribution: "© OpenStreetMap",
+		// }).addTo(this.map);
 		document.getElementById("map")!.style.background = "#f0fafd81";
 		this.markersLayer.addTo(this.map);
 		(window as any)["debugMap"] = this.map;
@@ -208,7 +342,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 				${activity.name}
 			</strong>
 			<p style="font-size:12px;color:#555;margin:0 0 6px 0;line-height:1.3">
-				${activity.description?.slice(0, 60) ?? ""}...
+				${activity.shortDescription?.slice(0, 60) ?? ""}...
 			</p>
 			<span style="font-size:11px;color:#2A4D1E;font-weight:600;cursor:pointer">
 				Haz clic en el icono para ver m&aacute;s
@@ -222,6 +356,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 		this.onlyFree.set(false);
 		this.onlyAccessible.set(false);
 		this.searchText.set("");
+		this.resetSignal.update(n => n + 1);
 	}
 
 	ngOnDestroy(): void {

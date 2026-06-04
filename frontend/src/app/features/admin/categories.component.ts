@@ -1,11 +1,12 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CategoriesService, AdminCategory } from '../../core/services/categories.service';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'aef-categories',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ConfirmDialogComponent],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss',
 })
@@ -17,6 +18,7 @@ export class CategoriesComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   toggleError = signal('');
+  pendingToggle = signal<AdminCategory | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -42,6 +44,26 @@ export class CategoriesComponent implements OnInit {
   }
 
   toggleActive(cat: AdminCategory): void {
+    if (cat.active) {
+      this.pendingToggle.set(cat);
+    } else {
+      this.executeToggle(cat);
+    }
+  }
+
+  confirmToggle(): void {
+    const cat = this.pendingToggle();
+    if (cat) {
+      this.pendingToggle.set(null);
+      this.executeToggle(cat);
+    }
+  }
+
+  cancelToggle(): void {
+    this.pendingToggle.set(null);
+  }
+
+  private executeToggle(cat: AdminCategory): void {
     this.toggleError.set('');
     this.categoriesService.toggleActive(cat._id, !cat.active).subscribe({
       next: (updated) => {

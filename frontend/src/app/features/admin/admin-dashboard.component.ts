@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { AdminService } from '../../core/services/admin.service';
 import { Activity } from '../../core/services/activities.service';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 type StatusFilter = 'todas' | 'activas' | 'inactivas';
 
 @Component({
   selector: 'aef-admin-dashboard',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, ConfirmDialogComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
@@ -22,6 +23,7 @@ export class AdminDashboardComponent implements OnInit {
   activities = signal<Activity[]>([]);
   loading = signal(true);
   error = signal('');
+  pendingToggle = signal<Activity | null>(null);
 
   searchQuery = signal('');
   statusFilter = signal<StatusFilter>('todas');
@@ -71,6 +73,26 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   toggleActive(activity: Activity): void {
+    if (activity.active) {
+      this.pendingToggle.set(activity);
+    } else {
+      this.executeToggle(activity);
+    }
+  }
+
+  confirmToggle(): void {
+    const activity = this.pendingToggle();
+    if (activity) {
+      this.pendingToggle.set(null);
+      this.executeToggle(activity);
+    }
+  }
+
+  cancelToggle(): void {
+    this.pendingToggle.set(null);
+  }
+
+  private executeToggle(activity: Activity): void {
     this.admin.updateActivity(activity._id, { active: !activity.active }).subscribe({
       next: (updated) => {
         this.activities.update((list) =>
