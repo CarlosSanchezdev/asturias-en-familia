@@ -1,0 +1,49 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.angular/
+
+# Docker volúmenes
+mongo_data/
+
+# Archivos subidos por usuarios (datos en runtime, no código)
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+/e2e/playwright-report/
+/e2e/test-results/
+
+# Playwright
+playwright/.cache/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

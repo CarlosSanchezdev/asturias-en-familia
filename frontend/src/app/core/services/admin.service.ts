@@ -1,0 +1,69 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { Activity, Category } from './activities.service';
+
+export interface ActivityPayload {
+  name: string;
+  shortDescription?: string;
+  description?: string;
+  category: string;
+  zone: 'oriente' | 'centro' | 'occidente';
+  municipality?: string;
+  priceText?: string;
+  free?: boolean;
+  accessible?: boolean;
+  images?: string[];
+  languages: string[];
+  location: { type: 'Point'; coordinates: [number, number] };
+  mapLeft: number;
+  mapTop: number;
+  active?: boolean;
+  website?: string;
+  phone?: string;
+  address?: string;
+  schedule?: string;
+  tips?: string;
+}
+
+
+@Injectable({ providedIn: 'root' })
+export class AdminService {
+  private http = inject(HttpClient);
+  private base = `${environment.apiUrl}/api`;
+
+  getAllActivities() {
+    return this.http.get<{ data: Activity[]; pagination: unknown }>(
+      `${this.base}/activities`
+    );
+  }
+
+  getActivity(id: string) {
+    return this.http.get<Activity>(`${this.base}/activities/${id}`);
+  }
+
+  getCategories() {
+    return this.http.get<Category[]>(`${this.base}/categories`);
+  }
+
+  createActivity(payload: ActivityPayload) {
+    return this.http.post<Activity>(`${this.base}/activities`, payload);
+  }
+
+  updateActivity(id: string, payload: Partial<ActivityPayload>) {
+    return this.http.put<Activity>(`${this.base}/activities/${id}`, payload);
+  }
+
+  deleteActivity(id: string) {
+    return this.http.delete(`${this.base}/activities/${id}`);
+  }
+
+  uploadActivityImage(file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ url: string; filename: string }>(
+      `${this.base}/uploads/activity-image`,
+      formData
+    );
+  }
+}

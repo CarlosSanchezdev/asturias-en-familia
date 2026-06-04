@@ -1,0 +1,84 @@
+/* Estilos globales — Asturias en Familia */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --color-bg: #FDF8F0;
+  --color-primary: #2A4D1E;
+  --color-primary-light: #3D7A36;
+  --color-surface: #FFFFFF;
+  --color-border: #E8E0D0;
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B6B;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+@import 'leaflet/dist/leaflet.css';
+
+/* Tooltip personalizado de markers del mapa — glassmorphism */
+.custom-map-tooltip.leaflet-tooltip {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 24px rgba(180, 210, 230, 0.35) !important;
+  padding: 12px 16px !important;
+  min-width: 160px !important;
+  max-width: 210px !important;
+  color: #1a1a1a !important;
+  font-family: 'Segoe UI', system-ui, sans-serif !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  pointer-events: none !important;
+}
+
+.custom-map-tooltip.leaflet-tooltip strong {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+  display: block !important;
+  margin-bottom: 5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+.custom-map-tooltip.leaflet-tooltip p {
+  font-size: 12px !important;
+  color: #444 !important;
+  margin: 0 0 8px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.custom-map-tooltip.leaflet-tooltip span {
+  font-size: 11px !important;
+  color: #2a4d1e !important;
+  font-weight: 600 !important;
+}
+
+.custom-map-tooltip.leaflet-tooltip::before {
+  display: none !important;
+}
+
+/* Forzar vista horizontal en móvil/tablet en portrait */
+@media screen and (orientation: portrait) and (max-width: 1024px) {
+  body {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    transform-origin: 0 0;
+    transform: rotate(-90deg) translateX(-100%);
+    overflow: hidden;
+  }
+}

@@ -1,0 +1,58 @@
+name: asturias-en-familia-prod
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: aef-mongodb-prod
+    restart: always
+    volumes:
+      - mongo_data_prod:/data/db
+    # En prod NO exponemos el puerto 27017 al host
+    expose:
+      - "27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: aef-backend-prod
+    restart: always
+    expose:
+      - "3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: aef-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro  # certificados TLS
+
+volumes:
+  mongo_data_prod:
+    name: aef-mongo-data-prod
