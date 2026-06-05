@@ -39,4 +39,13 @@ export class ActivityPopupComponent {
   toggleExpand(): void {
     this.expanded.update(v => !v);
   }
+
+  zoneLabel(zone: string): string {
+    const labels: Record<string, string> = {
+      oriente: 'Oriente',
+      centro: 'Centro',
+      occidente: 'Occidente',
+    };
+    return labels[zone] ?? zone;
+  }
 }

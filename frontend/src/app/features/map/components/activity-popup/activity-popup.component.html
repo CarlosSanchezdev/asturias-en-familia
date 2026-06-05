@@ -34,17 +34,28 @@
     <p class="popup-short-desc">{{ activity.shortDescription }}</p>
     }
 
-    <!-- Meta: municipio y precio -->
+    <!-- Meta: municipio, zona, precio y accesibilidad -->
     <div class="popup-meta">
       @if (activity.municipality) {
       <span class="popup-meta__item">📍 {{ activity.municipality }}</span>
       }
+      @if (activity.zone) {
+      <span class="popup-meta__badge popup-meta__badge--zone">🗺 {{ zoneLabel(activity.zone) }}</span>
+      }
       @if (activity.free) {
       <span class="popup-meta__badge popup-meta__badge--free">Gratuita</span>
       } @else if (activity.priceText) {
-      <span class="popup-meta__item popup-meta__item--price">{{ activity.priceText }}</span>
+      <span class="popup-meta__item popup-meta__item--price">💶 {{ activity.priceText }}</span>
+      }
+      @if (activity.accessible) {
+      <span class="popup-meta__badge popup-meta__badge--accessible">♿ Accesible</span>
       }
     </div>
+
+    <!-- Dirección -->
+    @if (activity.address) {
+    <p class="popup-address">🏠 {{ activity.address }}</p>
+    }
 
     <!-- Idiomas -->
     @if (activity.languages.length) {
@@ -52,6 +63,14 @@
       @for (lang of activity.languages; track lang) {
       <span class="popup-lang">{{ lang }}</span>
       }
+    </div>
+    }
+
+    <!-- Horarios -->
+    @if (activity.schedule) {
+    <div class="popup-info-row">
+      <span class="popup-info-row__icon">🕐</span>
+      <span class="popup-info-row__text">{{ activity.schedule }}</span>
     </div>
     }
 
@@ -79,6 +98,14 @@
     <button type="button" class="popup-expand-btn" (click)="toggleExpand()">
       {{ expanded() ? '▲ Leer menos' : '▼ Leer más' }}
     </button>
+    }
+
+    <!-- Consejos -->
+    @if (activity.tips) {
+    <div class="popup-tips">
+      <p class="popup-tips__label">💡 Consejos</p>
+      <p class="popup-tips__text">{{ activity.tips }}</p>
+    </div>
     }
 
   </div>

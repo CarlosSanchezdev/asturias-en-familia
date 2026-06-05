@@ -245,6 +245,16 @@
     background: #d4edda;
     color: #155724;
   }
+
+  &--zone {
+    background: #e8f0fe;
+    color: #1a56a0;
+  }
+
+  &--accessible {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
 }
 
 // ─── Idiomas ───────────────────────────────────────────────
@@ -261,6 +271,34 @@
   border-radius: 8px;
   padding: 2px 9px;
   font-size: 12px;
+}
+
+// ─── Dirección ─────────────────────────────────────────────
+.popup-address {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+// ─── Fila de info (horarios, etc.) ─────────────────────────
+.popup-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+
+  &__icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.55;
+  }
 }
 
 // ─── Contacto ──────────────────────────────────────────────
@@ -282,6 +320,31 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+// ─── Consejos ──────────────────────────────────────────────
+.popup-tips {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin-top: 16px;
+
+  &__label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.55;
+    margin: 0;
   }
 }
 
