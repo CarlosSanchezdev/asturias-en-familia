@@ -1,7 +1,15 @@
-<aef-map-header (searchChange)="searchText.set($event)" />
+<aef-map-header [initialSearch]="initialSearch" (searchChange)="searchText.set($event)" />
 
-<aef-filter-panel [categories]="activitiesService.categories()" (categoriesChange)="activeCategories.set($event)"
-  (freeChange)="onlyFree.set($event)" (zoneChange)="activeZone.set($event)"
+<aef-filter-panel
+  [categories]="activitiesService.categories()"
+  [initialCategories]="initialCats"
+  [initialFree]="initialFree"
+  [initialZone]="initialZone"
+  [initialAccessible]="initialAccessible"
+  [resetSignal]="resetSignal()"
+  (categoriesChange)="activeCategories.set($event)"
+  (freeChange)="onlyFree.set($event)"
+  (zoneChange)="activeZone.set($event)"
   (accessibleChange)="onlyAccessible.set($event)" />
 
 <p class="result-count">{{ resultCount() }} actividades</p>

@@ -21,8 +21,8 @@
   <div class="chips-bar__cats-wrap">
     <div class="chips-bar__inner" #chipsScroll (scroll)="onScroll()">
       @for (cat of categories; track cat._id) {
-      <button type="button" class="chip" [class.chip--active]="isCategoryActive(cat._id)"
-        [style.--cat-color]="cat.color" (click)="toggleCategory(cat._id)">
+      <button type="button" class="chip" [class.chip--active]="isCategoryActive(cat.slug)"
+        [style.--cat-color]="cat.color" (click)="toggleCategory(cat.slug)">
         <img [src]="iconUrl(cat.icon)" [alt]="cat.name" class="chip__icon"
           onerror="this.onerror=null; this.style.display='none'" />
         {{ cat.name }}

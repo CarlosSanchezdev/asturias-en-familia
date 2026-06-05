@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnDestroy, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnInit, signal } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 @Component({
@@ -8,7 +8,8 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
   templateUrl: './map-header.component.html',
   styleUrl: './map-header.component.scss',
 })
-export class MapHeaderComponent implements OnDestroy {
+export class MapHeaderComponent implements OnDestroy, OnInit {
+  @Input() initialSearch = '';
   @Output() searchChange = new EventEmitter<string>();
 
   readonly searchValue = signal('');
@@ -22,6 +23,12 @@ export class MapHeaderComponent implements OnDestroy {
       distinctUntilChanged(),
       takeUntil(this.destroy$),
     ).subscribe(text => this.searchChange.emit(text));
+  }
+
+  ngOnInit(): void {
+    if (this.initialSearch) {
+      this.searchValue.set(this.initialSearch);
+    }
   }
 
   onSearchInput(event: Event): void {

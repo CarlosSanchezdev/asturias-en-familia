@@ -110,3 +110,13 @@
     </div>
   }
 </div>
+
+@if (pendingToggle(); as activity) {
+  <aef-confirm-dialog
+    title="Desactivar actividad"
+    [message]="'¿Seguro que quieres desactivar «' + activity.name + '»? Dejará de aparecer en el mapa.'"
+    confirmLabel="Desactivar"
+    (confirmed)="confirmToggle()"
+    (cancelled)="cancelToggle()"
+  />
+}
